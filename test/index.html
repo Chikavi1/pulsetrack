@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>PulseTrack Event Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-6 bg-gray-100">
+
+  <h1 class="text-3xl font-bold text-blue-700 mb-6">PulseTrack SDK Event Test</h1>
+
+  <!-- Action Buttons -->
+  <div class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+    <button id="btn-click" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition-colors">Click Event</button>
+    <button id="btn-double-click" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded transition-colors">Double Click</button>
+    <button id="btn-mouseover" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded transition-colors">Hover Me</button>
+    <button id="btn-logs" class="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded transition-colors">Show Logs</button>
+  </div>
+
+  <!-- Login Section -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-3 text-gray-800">User Session</h2>
+    <div class="flex flex-wrap gap-3">
+      <button id="btn-login" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors">
+        <i class="mr-2">🔑</i>Login
+      </button>
+      <button id="btn-logout" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded transition-colors">
+        <i class="mr-2">🚪</i>Logout
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Testing Section -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-3 text-gray-800">Error Testing</h2>
+    <div class="flex flex-wrap gap-3">
+      <button id="btn-error" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors">
+        <i class="mr-2">❌</i>Error 1
+      </button>
+      <button id="btn-error2" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors">
+        <i class="mr-2">⚠️</i>Error 2
+      </button>
+      <button id="btn-error3" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-colors">
+        <i class="mr-2">❗</i>Error 3
+      </button>
+    </div>
+  </div>
+
+  <!-- Image Gallery -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-3">Image Gallery</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="relative group">
+        <img src="https://images.unsplash.com/photo-1761839257046-84e95464cc52?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxfHx8ZW58MHx8fHx8" alt="Nature" class="rounded-lg w-full h-32 object-cover cursor-pointer hover:opacity-90 transition-opacity" data-img-id="nature-1">
+        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <button class="bg-white bg-opacity-80 text-black px-3 py-1 rounded-full text-sm font-medium">View</button>
+        </div>
+      </div>
+      <div class="relative group">
+        <img src="https://images.unsplash.com/photo-1761839257046-84e95464cc52?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxfHx8ZW58MHx8fHx8" alt="Architecture" class="rounded-lg w-full h-32 object-cover cursor-pointer hover:opacity-90 transition-opacity" data-img-id="architecture-1">
+        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <button class="bg-white bg-opacity-80 text-black px-3 py-1 rounded-full text-sm font-medium">View</button>
+        </div>
+      </div>
+      <div class="relative group">
+        <img src="https://images.unsplash.com/photo-1761839257046-84e95464cc52?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxfHx8ZW58MHx8fHx8" alt="Food" class="rounded-lg w-full h-32 object-cover cursor-pointer hover:opacity-90 transition-opacity" data-img-id="food-1">
+        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <button class="bg-white bg-opacity-80 text-black px-3 py-1 rounded-full text-sm font-medium">View</button>
+        </div>
+      </div>
+      <div class="relative group">
+        <img src="https://images.unsplash.com/photo-1761839257046-84e95464cc52?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxfHx8ZW58MHx8fHx8" alt="Technology" class="rounded-lg w-full h-32 object-cover cursor-pointer hover:opacity-90 transition-opacity" data-img-id="tech-1">
+        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <button class="bg-white bg-opacity-80 text-black px-3 py-1 rounded-full text-sm font-medium">View</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <form id="test-form" class="mb-6 p-4 bg-white rounded shadow-md">
+    <h2 class="text-xl font-semibold mb-2">Formulario de prueba</h2>
+    <input type="text" name="name" placeholder="Nombre" class="border p-2 mb-2 w-full"/>
+    <input type="email" name="email" placeholder="Email" class="border p-2 mb-2 w-full"/>
+    <select name="category" class="border p-2 mb-2 w-full">
+      <option value="">Selecciona categoría</option>
+      <option value="A">A</option>
+      <option value="B">B</option>
+    </select>
+    <label class="inline-flex items-center mb-2">
+      <input type="checkbox" name="subscribe" class="mr-2"> Suscribirse
+    </label>
+    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Enviar</button>
+  </form>
+
+  <!-- Interactive Elements -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <!-- Search Bar -->
+    <div class="bg-white p-4 rounded-lg shadow">
+      <h3 class="text-lg font-semibold mb-3">Search</h3>
+      <div class="flex">
+        <input type="search" id="search-box" placeholder="Search products..." class="border border-r-0 rounded-l-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+        <button id="btn-search" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-r-lg transition-colors">Search</button>
+      </div>
+      <div id="search-suggestions" class="mt-2 hidden bg-white border rounded-lg shadow-lg absolute w-1/3 z-10">
+        <!-- Suggestions will appear here -->
+      </div>
+    </div>
+
+    <!-- Product Rating -->
+    <div class="bg-white p-4 rounded-lg shadow">
+      <h3 class="text-lg font-semibold mb-3">Rate this product</h3>
+      <div class="flex items-center space-x-1" id="rating-stars">
+        <button class="text-2xl" data-rating="1">☆</button>
+        <button class="text-2xl" data-rating="2">☆</button>
+        <button class="text-2xl" data-rating="3">☆</button>
+        <button class="text-2xl" data-rating="4">☆</button>
+        <button class="text-2xl" data-rating="5">☆</button>
+      </div>
+      <p class="text-sm text-gray-500 mt-1">Click to rate</p>
+    </div>
+  </div>
+
+  <!-- Product Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow" data-product-id="prod-001">
+      <img src="https://images.unsplash.com/photo-1761839257046-84e95464cc52?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxfHx8ZW58MHx8fHx8" alt="Wireless Headphones" class="w-full h-48 object-cover cursor-pointer">
+      <div class="p-4">
+        <h3 class="font-semibold text-lg mb-1">Wireless Headphones</h3>
+        <p class="text-gray-600 text-sm mb-2">Noise cancelling over-ear headphones with 30h battery life</p>
+        <div class="flex justify-between items-center">
+          <span class="font-bold text-lg">$199.99</span>
+          <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow" data-product-id="prod-002">
+      <img src="https://images.unsplash.com/photo-1761839257046-84e95464cc52?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxfHx8ZW58MHx8fHx8" alt="Smartphone" class="w-full h-48 object-cover cursor-pointer">
+      <div class="p-4">
+        <h3 class="font-semibold text-lg mb-1">Smartphone Pro</h3>
+        <p class="text-gray-600 text-sm mb-2">Latest model with 108MP camera and 5G connectivity</p>
+        <div class="flex justify-between items-center">
+          <span class="font-bold text-lg">$899.99</span>
+          <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow" data-product-id="prod-003">
+      <img src="https://images.unsplash.com/photo-1761839257046-84e95464cc52?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxfHx8ZW58MHx8fHx8" alt="Smartwatch" class="w-full h-48 object-cover cursor-pointer">
+      <div class="p-4">
+        <h3 class="font-semibold text-lg mb-1">Smart Watch X</h3>
+        <p class="text-gray-600 text-sm mb-2">Track your fitness and stay connected on your wrist</p>
+        <div class="flex justify-between items-center">
+          <span class="font-bold text-lg">$249.99</span>
+          <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs -->
+  <div id="logs" class="p-4 bg-white rounded shadow-md h-48 overflow-auto text-sm font-mono"></div>
+
+  <script type="module">
+    import { PulseTrack } from '../dist/index.js';
+ 
+    PulseTrack.init({ businessId: '080fbac4-2aa8-4016-89ee-e339bd3c1c16' });
+    const tracker = PulseTrack.tracker();
+
+    const log = (msg) => {
+      const logs = document.getElementById('logs');
+      logs.innerHTML += `${new Date().toISOString()} - ${msg}<br/>`;
+      logs.scrollTop = logs.scrollHeight;
+    };
+
+    // Track page view
+    tracker.track('page_view', {
+      page_title: 'Test Page',
+      page_url: window.location.href,
+      referrer: document.referrer
+    });
+
+    // Button Events
+    document.getElementById('btn-click').addEventListener('click', () => {
+      tracker.track('button_click', { 
+        button_id: 'btn-click',
+        button_text: 'Click Event',
+        page_section: 'action_buttons'
+      });
+      log('Tracked button click');
+    });
+
+    // Double click event
+    document.getElementById('btn-double-click').addEventListener('dblclick', () => {
+      tracker.track('button_double_click', { 
+        button_id: 'btn-double-click',
+        page_section: 'action_buttons'
+      });
+      log('Tracked double click');
+    });
+
+    // Mouseover event
+    document.getElementById('btn-mouseover').addEventListener('mouseover', () => {
+      tracker.track('button_hover', { 
+        button_id: 'btn-mouseover',
+        page_section: 'action_buttons'
+      });
+      log('Tracked button hover');
+    });
+
+    // Show logs
+    document.getElementById('btn-logs').addEventListener('click', () => {
+      log('Current tracker data: ' + JSON.stringify(PulseTrack.tracker().getData()));
+    });
+
+    // Form submission
+    document.getElementById('test-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = Object.fromEntries(new FormData(e.target));
+      tracker.track('form_submit', {
+        form_id: 'test-form',
+        form_name: 'Test Form',
+        ...formData
+      });
+      log(`Form submitted: ${JSON.stringify(formData)}`);
+    });
+
+    // Input changes with debounce
+    let inputTimeout;
+    document.querySelectorAll('input, select, textarea').forEach((el) => {
+      el.addEventListener('input', (e) => {
+        clearTimeout(inputTimeout);
+        inputTimeout = setTimeout(() => {
+          tracker.track('form_input', { 
+            field_name: e.target.name || e.target.id,
+            field_type: e.target.type,
+            value: e.target.value,
+            form_id: e.target.form?.id || 'n/a'
+          });
+          log(`Input changed: ${e.target.name || e.target.id} = ${e.target.value}`);
+        }, 500);
+      });
+    });
+
+    // Search functionality
+    const searchBox = document.getElementById('search-box');
+    const searchBtn = document.getElementById('btn-search');
+    const searchSuggestions = document.getElementById('search-suggestions');
+    
+
+    // Login
+    document.getElementById('btn-login').addEventListener('click', () => {
+      localStorage.setItem('tracker_user','user123');
+      log('Tracked login');
+    });
+
+    // Logout
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      localStorage.removeItem('tracker_user');
+      log('Tracked logout');
+    });
+
+    // Error
+        document.getElementById('btn-error').addEventListener('click', () => {
+      throw new Error('Error de prueba 1');
+    });
+
+    // Error 2
+    document.getElementById('btn-error2').addEventListener('click', () => {
+      const obj = null;
+      obj.nonExistentMethod(); // Esto causará un TypeError
+    });
+
+    // Error 3
+    document.getElementById('btn-error3').addEventListener('click', () => {
+      // Error de referencia a variable no definida
+      nonExistentVariable;
+    });
+
+    // Track search
+    searchBtn.addEventListener('click', () => {
+      const query = searchBox.value.trim();
+      if (query) {
+        tracker.track('search', { 
+          query: query,
+          source: 'search_box',
+          result_count: Math.floor(Math.random() * 50) // Simulate result count
+        });
+        log(`Search executed: ${query}`);
+      }
+    });
+
+    // Search suggestions
+    searchBox.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      if (query.length > 2) {
+        // Simulate API call for suggestions
+        const suggestions = [
+          `${query} products`,
+          `${query} 2023`,
+          `best ${query}`,
+          `buy ${query} online`
+        ];
+        
+        searchSuggestions.innerHTML = suggestions.map(s => 
+          `<div class="p-2 hover:bg-gray-100 cursor-pointer">${s}</div>`
+        ).join('');
+        searchSuggestions.classList.remove('hidden');
+        
+        tracker.track('search_suggest', { query: query });
+      } else {
+        searchSuggestions.classList.add('hidden');
+      }
+    });
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!searchBox.contains(e.target) && !searchSuggestions.contains(e.target)) {
+        searchSuggestions.classList.add('hidden');
+      }
+    });
+
+    // Image click tracking
+    document.querySelectorAll('img[data-img-id]').forEach(img => {
+      img.addEventListener('click', (e) => {
+        const imgId = e.target.getAttribute('data-img-id');
+        tracker.track('image_click', {
+          image_id: imgId,
+          alt_text: e.target.alt,
+          source: 'gallery'
+        });
+        log(`Image clicked: ${imgId} (${e.target.alt})`);
+      });
+    });
+
+    // Product card interactions
+    document.querySelectorAll('[data-product-id]').forEach(card => {
+      const productId = card.getAttribute('data-product-id');
+      const productName = card.querySelector('h3')?.textContent || 'Unknown Product';
+      const productPrice = card.querySelector('span')?.textContent || '0';
+      
+      // Track product view when card comes into viewport
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            tracker.track('product_view', {
+              product_id: productId,
+              name: productName,
+              price: productPrice,
+              currency: 'USD',
+              position: Array.from(card.parentNode.children).indexOf(card) + 1
+            });
+            log(`Product viewed: ${productName}`);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+      
+      observer.observe(card);
+      
+      // Track add to cart
+      const addToCartBtn = card.querySelector('button');
+      if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          tracker.track('add_to_cart', {
+            product_id: productId,
+            name: productName,
+            price: productPrice,
+            currency: 'USD',
+            quantity: 1
+          });
+          
+          // Show feedback
+          const originalText = addToCartBtn.textContent;
+          addToCartBtn.textContent = 'Added! ✓';
+          addToCartBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+          addToCartBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+          
+          setTimeout(() => {
+            addToCartBtn.textContent = originalText;
+            addToCartBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+            addToCartBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+          }, 2000);
+          
+          log(`Added to cart: ${productName}`);
+        });
+      }
+    });
+
+    // Rating system
+    const ratingStars = document.querySelectorAll('#rating-stars button');
+    ratingStars.forEach((star, index) => {
+      star.addEventListener('click', () => {
+        const rating = index + 1;
+        
+        // Update UI
+        ratingStars.forEach((s, i) => {
+          s.textContent = i <= index ? '★' : '☆';
+        });
+        
+        // Track rating
+        tracker.track('product_rating', {
+          rating: rating,
+          max_rating: 5,
+          product_id: 'demo-product-123',
+          product_name: 'Demo Product'
+        });
+        
+        log(`Rated ${rating} stars`);
+      });
+    });
+
+    // Track time on page
+    let pageStartTime = Date.now();
+    const trackTimeOnPage = () => {
+      const timeSpent = Math.floor((Date.now() - pageStartTime) / 1000);
+      tracker.track('time_on_page', {
+        seconds: timeSpent,
+        page_url: window.location.href
+      });
+      log(`Time on page: ${timeSpent} seconds`);
+    };
+    
+    // Track when page is hidden or closed
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        trackTimeOnPage();
+      }
+    });
+    
+    // Track before unload
+    window.addEventListener('beforeunload', trackTimeOnPage);
+
+    // Feedback widget
+    PulseTrack.Feedback({
+      position: 'bottom-right',
+      buttonText: 'Send Feedback',
+      themeColor: '#3b82f6', // blue-500
+      autoOpen: false,
+    });
+
+    // Initial log
+    log('PulseTrack ready - Interactive demo page loaded');
+  </script>
+</body>
+</html>

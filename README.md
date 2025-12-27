@@ -1,0 +1,78 @@
+# PulseTrack
+
+[![npm version](https://img.shields.io/npm/v/pulsetrack.svg?style=flat-square)](https://www.npmjs.com/package/pulsetrack)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg?style=flat-square)](https://www.typescriptlang.org/)
+
+PulseTrack is a lightweight analytics and feedback collection library designed for modern web applications. It provides developers with powerful tools to understand user behavior, collect feedback, and make data-driven decisions.
+
+## ✨ Features
+
+- 📊 **Comprehensive Analytics**
+  - Page view and navigation tracking
+  - User interaction monitoring (clicks, form submissions, etc.)
+  - Custom event tracking
+  - Session management
+
+- 💬 **User Feedback**
+  - Built-in feedback widgets
+  - Customizable feedback forms
+  - Screenshot capture for visual feedback
+  - User metadata collection
+
+- 🚀 **Developer Friendly**
+  - TypeScript support
+  - Framework agnostic (works with React, Vue, Angular, etc.)
+  - Extensible plugin system
+  - Detailed documentation
+
+## 📦 Installation
+
+Install PulseTrack using npm:
+
+```bash
+npm install pulsetrack
+# or
+yarn add pulsetrack
+```
+
+## 🚀 Quick Start
+
+```typescript
+import { PulseTrack } from 'pulsetrack';
+
+// Initialize with your configuration
+const tracker = new PulseTrack({
+  businessId: 'your-business-id'
+});
+
+// Track a custom event
+tracker.track('user_action', { action: 'button_click', buttonId: 'cta-button' });
+```
+
+## 📚 Documentation
+
+For detailed documentation, please visit our [documentation website](https://pulsetrack.dev/docs).
+
+### Available Plugins
+
+- **Analytics**: Core tracking functionality
+- **Feedback**: User feedback collection
+- **Performance**: Page load and resource timing
+- **Error Tracking**: JavaScript error monitoring
+
+## 🔧 Configuration
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `businessId` | string | - | Your business identifier (required) |
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) to get started.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Built with ❤️ by the PulseTrack team
