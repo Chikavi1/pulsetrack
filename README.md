@@ -32,7 +32,9 @@ Install PulseTrack using npm:
 
 ```bash
 npm install pulsetrack
-# or
+```
+or
+```bash
 yarn add pulsetrack
 ```
 
