@@ -1,12 +1,20 @@
 // import { EventType as RRWebEvent } from 'rrweb';
 
 
+export interface PageNavigation {
+  page: string;
+  timestamp: number;
+  previousPage?: string;
+  duration?: number;
+}
+
 export interface Session {
   id: string;
   createdAt: string;
   errors: TrackedError[];
   userInfo: UserInfo;
   pages: PageSession[];
+  pageHistory: PageNavigation[];
   userId?: string | undefined;
   entryPage?: string;
   exitPage?: string;

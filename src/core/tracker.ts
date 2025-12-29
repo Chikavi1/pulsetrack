@@ -2,11 +2,12 @@
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { Event, EventData, RecordedEvent, TrackedError, Session } from './interfaces';
 import { botTracker } from './bot';
- 
+import SessionStorageService from './SessionStorageService';
+
 export interface TrackerOptions {
   businessId?: string;
   userId?: string;
- }
+}
 
 export class SystemTracker {
   private readonly endpoint: string;
@@ -21,16 +22,26 @@ export class SystemTracker {
   private pageStartTime: number;
   private errors: TrackedError[] = [];
   private isPaused: boolean = false;
+  private storage: SessionStorageService;
 
   constructor(options: TrackerOptions = {}) {
     this.options = { ...options };
     this.endpoint = 'http://localhost:3001/sessions';
 
+    // ✅ Storage (single source of truth)
+    this.storage = new SessionStorageService({
+      businessId: options.businessId,
+      inactivityMs: 30000,
+      useBeacon: true,
+    });
+    this.storage.startAutoFlush();
+
     this.sessionStartTime = Date.now();
     this.pageStartTime = this.sessionStartTime;
 
+    // ⚠️ Session se mantiene SOLO para errores y payload final
     this.session = this.createSession();
-    this.addPageIfNotExist();
+
     this.trackErrors();
     this.setupNavigationListener();
 
@@ -53,17 +64,16 @@ export class SystemTracker {
     this.listenClicks();
     this.listenInputs();
     this.listenScroll();
+    this.listenInternalLinks();
   }
 
-
-   public init(): void {
-     this.startTracking();
-  }
-
-   public start(): void {
+  public init(): void {
     this.startTracking();
   }
 
+  public start(): void {
+    this.startTracking();
+  }
 
   public pause(): void {
     this.isPaused = true;
@@ -77,7 +87,12 @@ export class SystemTracker {
   }
 
   public async stop(): Promise<void> {
+    await this.storage.flushNow('manual');
     await this.endSession();
+  }
+
+  public clear(): void {
+    this.storage.restartSession();
   }
 
   public reset(): void {
@@ -91,9 +106,16 @@ export class SystemTracker {
     this.isPaused = false;
   }
 
-  public getData(): Session {
-    console.log('session',this.getPayload());
-    return this.session;
+  public getData(): Session | null {
+    const data = localStorage.getItem('pt:session:v1');
+    if (!data) return null;
+
+    try {
+      return JSON.parse(data);
+    } catch (error) {
+      console.error('Failed to parse session data:', error);
+      return null;
+    }
   }
 
   public getEvents(): RecordedEvent[] {
@@ -108,7 +130,9 @@ export class SystemTracker {
      Event recording
   ===================== */
 
-   private recordEvent(type: string, data: EventData = {}): void {
+  private recordEvent(type: string, data: EventData = {}): void {
+    if (this.isPaused) return;
+
     const now = Date.now();
     const event: RecordedEvent = {
       type,
@@ -117,54 +141,31 @@ export class SystemTracker {
       relativeTime: now - this.sessionStartTime,
       page: this.pageUrl,
     };
-  
+
     const hash = JSON.stringify(event);
     if (this.lastEventHash === hash) return;
     this.lastEventHash = hash;
-  
-    const page = this.getCurrentPage();
-    page.events.push({ ...event, page: this.pageUrl });
-  
-    console.log('Evento creado')
-  
-     if (type === 'input') {
-      console.log('Input creado')
-      page.totalInputs ??= 0;
-      page.totalInputs++;
-      this.session.totalInputs!++;
-    }
-  
-  
-    if (type === 'click') {
-    const target = data.target as HTMLElement | undefined;
-  
-     if (target && target.tagName === 'INPUT') {
-      const inputType = (target as HTMLInputElement).type;
-      if (inputType === 'text' || inputType === 'number' || inputType === 'password') {
-        return;  
-      }
-    }
-  
-    console.log('Click creado');
-    page.totalClicks++;
-    this.session.totalClicks!++;
-  }
-    
-   
+
+    // ⚠️ SystemTracker NO modifica contadores ni páginas
+    // ⚠️ Solo emite el evento
     this.session.systemEvents.push(event);
+
+    // ✅ Persistencia centralizada
+    this.storage.addEvent(type, data);
   }
-  
 
   /* =====================
      Page management
   ===================== */
 
-
-  private generateSession(){
+  private generateSession() {
     return `sess_${Date.now()}`;
   }
 
   private createSession(): Session {
+    const initialPage = window.location.pathname;
+    const now = Date.now();
+
     return {
       id: this.generateSession(),
       createdAt: new Date().toISOString(),
@@ -173,66 +174,68 @@ export class SystemTracker {
       userInfo: {
         browser: navigator.userAgent,
         platform: navigator.platform,
-        language: navigator.language, 
+        language: navigator.language,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         deviceType: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
         screen: { width: window.innerWidth, height: window.innerHeight },
         fingerprint: null,
         isBot: false,
       },
-      pages: [{
-        page: window.location.pathname,
-        duration: 0,
-        totalClicks: 0,
-        totalInputs: 0,
-        percentageScroll: 0,
-        events: [],
+      pages: [],
+      pageHistory: [{
+        page: initialPage,
+        timestamp: now,
+        previousPage: undefined,
+        duration: 0
       }],
-      entryPage: window.location.pathname,
-      exitPage: window.location.pathname,
-      systemEvents:[],
+      entryPage: initialPage,
+      exitPage: initialPage,
+      systemEvents: [],
       totalClicks: 0,
       totalInputs: 0,
       totalPagesVisited: 1,
-      rrwebEvents:[]
+      rrwebEvents: [],
     };
-  }
-
-  private addPageIfNotExist(): void {
-    const exists = this.session.pages.find(p => p.page === this.pageUrl);
-    if (!exists) {
-      this.session.pages.push({
-        page: this.pageUrl,
-        duration: 0,
-        totalClicks: 0,
-        totalInputs: 0,
-        percentageScroll: 0,
-        events: [],
-      });
-    }
-  }
-
-  private getCurrentPage() {
-    return this.session.pages.find(p => p.page === this.pageUrl)!;
   }
 
   private handlePageChange(newPage: string): void {
     const now = Date.now();
-    const currentPage = this.getCurrentPage();
-    if (currentPage) {
-      currentPage.duration = now - this.pageStartTime;
-      this.recordEvent('page_exit', { page: this.pageUrl, duration: currentPage.duration, maxScroll: this.maxScroll });
-    }
+    const oldPage = this.pageUrl;
+
+    if (newPage === oldPage) return;
+
+    const pageDuration = now - this.pageStartTime;
+
+    this.recordEvent('page_exit', {
+      page: oldPage,
+      duration: pageDuration,
+      maxScroll: this.maxScroll,
+    });
 
     this.maxScroll = 0;
     this.lastEventHash = null;
-    const oldPage = this.pageUrl;
     this.pageUrl = newPage;
     this.pageStartTime = now;
 
-    this.addPageIfNotExist();
     this.session.exitPage = newPage;
-    this.recordEvent('page_view', { page: newPage, previousPage: oldPage });
+
+    this.session.pageHistory.push({
+      page: newPage,
+      timestamp: now,
+      previousPage: oldPage,
+      duration: 0
+    });
+
+    const uniquePages = new Set(this.session.pageHistory.map(p => p.page));
+    this.session.totalPagesVisited = uniquePages.size;
+
+    // ✅ Importante: storage decide la página actual
+    this.storage.onPageChange(newPage);
+
+    this.recordEvent('page_view', {
+      page: newPage,
+      previousPage: oldPage,
+    });
   }
 
   /* =====================
@@ -241,9 +244,9 @@ export class SystemTracker {
 
   private listenClicks(): void {
     document.body.addEventListener('click', (e: MouseEvent) => {
- 
       const target = e.target as HTMLElement;
       if (!target) return;
+
       this.recordEvent('click', {
         x: e.clientX,
         y: e.clientY,
@@ -255,8 +258,8 @@ export class SystemTracker {
 
   private listenInputs(): void {
     const inputTimeouts = new WeakMap<Element, number>();
-    document.body.addEventListener('input', (e: any) => {
 
+    document.body.addEventListener('input', (e: any) => {
       const target = e.target as HTMLInputElement | HTMLTextAreaElement;
       if (!target || !['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
 
@@ -265,6 +268,7 @@ export class SystemTracker {
 
       const timeoutId = window.setTimeout(() => {
         if (!target.value) return;
+
         this.recordEvent('input', {
           tag: target.tagName,
           name: target.name || target.id || null,
@@ -285,7 +289,9 @@ export class SystemTracker {
       const percent = Math.round((window.scrollY / scrollHeight) * 100);
       if (percent > this.maxScroll) {
         this.maxScroll = percent;
-        this.getCurrentPage().percentageScroll = percent;
+
+        // ⚠️ No tocar session.pages aquí
+        this.storage.updateScrollPercentage(percent);
       }
     });
   }
@@ -296,40 +302,47 @@ export class SystemTracker {
 
     const handleNavigation = () => {
       const newUrl = window.location.pathname;
-      if (newUrl === this.pageUrl) return;
       this.handlePageChange(newUrl);
     };
 
     window.addEventListener('popstate', handleNavigation);
 
     const pushState = history.pushState;
-    const replaceState = history.replaceState;
-
     history.pushState = (...args) => {
       pushState.apply(history, args);
       handleNavigation();
     };
-
-    history.replaceState = (...args) => {
-      replaceState.apply(history, args);
-      handleNavigation();
-    };
   }
+
+  private listenInternalLinks(): void {
+  document.body.addEventListener('click', (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (!target) return;
+
+    const link = target.closest('a[href]');
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+    if (!href) return;
+    if (href.startsWith('http') || href.startsWith('//')) return; // links externos ignorados
+
+    // Llama a tu método interno de cambio de página
+    this.handlePageChange(href);
+  });
+}
 
   /* =====================
      Fingerprint & Bot
   ===================== */
 
   public async getFingerprint(): Promise<string | null> {
-      const fp = await FingerprintJS.load();
-      const result = await fp.get();
-      return result.visitorId;
+    const fp = await FingerprintJS.load();
+    const result = await fp.get();
+    return result.visitorId;
   }
-
 
   private async loadFingerprint(): Promise<void> {
     try {
- 
       this.fingerprint = await this.getFingerprint();
       this.session.userInfo.fingerprint = this.fingerprint;
     } catch {
@@ -345,21 +358,24 @@ export class SystemTracker {
   private trackErrors(): void {
     const recordError = (err: TrackedError, type: string) => {
       err.hash = this.generateErrorHash(err);
+
       const exists = this.errors.find(e => e.hash === err.hash);
       if (exists) {
         exists.count = (exists.count || 1) + 1;
         exists.lastOccurred = Date.now();
-      } else {
-        err.count = 1;
-        err.lastOccurred = Date.now();
-        this.errors.push(err);
-        this.session.errors.push(err);
-        this.recordEvent(type, err);
+        return;
       }
+
+      err.count = 1;
+      err.lastOccurred = Date.now();
+      this.errors.push(err);
+      this.session.errors.push(err);
+
+      this.recordEvent(type, err);
     };
 
     window.addEventListener('error', (e: ErrorEvent) => {
-      const error: TrackedError = {
+      recordError({
         message: e.message,
         stack: e.error?.stack,
         source: e.filename,
@@ -369,34 +385,19 @@ export class SystemTracker {
         page: this.pageUrl,
         hash: '',
         lastOccurred: Date.now(),
-      };
-      recordError(error, 'error');
+      }, 'error');
     });
 
     window.addEventListener('unhandledrejection', (e: PromiseRejectionEvent) => {
-      const error: TrackedError = {
+      recordError({
         message: String(e.reason),
         stack: e.reason?.stack,
         timestamp: Date.now(),
         page: this.pageUrl,
         hash: '',
         lastOccurred: Date.now(),
-      };
-      recordError(error, 'unhandled_rejection');
+      }, 'unhandled_rejection');
     });
-
-    const originalConsoleError = console.error;
-    console.error = (...args: any[]) => {
-      const error: TrackedError = {
-        message: args.map(a => String(a)).join(' '),
-        timestamp: Date.now(),
-        page: this.pageUrl,
-        hash: '',
-        lastOccurred: Date.now(),
-      };
-      recordError(error, 'console_error');
-      originalConsoleError.apply(console, args);
-    };
   }
 
   private generateErrorHash(err: TrackedError): string {
@@ -413,8 +414,8 @@ export class SystemTracker {
      Session & Payload
   ===================== */
 
-  private async endSession(rrwebEvents: any[] = []): Promise<void> {
-    const payload = this.getPayload(rrwebEvents);
+  private async endSession(): Promise<void> {
+    const payload = JSON.stringify(this.getPayload());
     await this.sendPayload(payload);
   }
 
@@ -425,6 +426,7 @@ export class SystemTracker {
         if (navigator.sendBeacon(this.endpoint, blob)) return;
       } catch {}
     }
+
     await fetch(this.endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -433,26 +435,23 @@ export class SystemTracker {
     });
   }
 
-  private getUser(){
+  private getUser() {
     return localStorage.getItem('tracker_user') || null;
   }
 
-  private getPayload(rrwebEvents: any[] = []): any {
+  private getPayload(): any {
     const now = Date.now();
     const sessionDuration = now - this.sessionStartTime;
 
     this.session.exitPage = this.pageUrl;
-    this.recordEvent('session_end', { duration: sessionDuration, maxScroll: this.maxScroll });
+    this.recordEvent('session_end', {
+      duration: sessionDuration,
+      maxScroll: this.maxScroll,
+    });
 
-    const data = {
+    return {
       business_id: this.options.businessId,
-      ...this.session
+      ...this.session,
     };
-
- 
-    
-
-    return data; 
-    // JSON.stringify(data);
   }
 }
