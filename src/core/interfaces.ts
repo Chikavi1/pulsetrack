@@ -1,4 +1,4 @@
-// import { EventType as RRWebEvent } from 'rrweb';
+import { EventType as RRWebEvent } from 'rrweb';
 
 
 export interface PageNavigation {
@@ -15,6 +15,7 @@ export interface Session {
   userInfo: UserInfo;
   pages: PageSession[];
   pageHistory: PageNavigation[];
+  durationMs?: number;
   userId?: string | undefined;
   entryPage?: string;
   exitPage?: string;

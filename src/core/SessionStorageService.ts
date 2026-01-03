@@ -51,6 +51,18 @@ export class SessionStorageService {
   }
 
   /* =====================
+     Utils
+  ===================== */
+
+  private isSPA(): boolean {
+    return !!(window.history && history.pushState);
+  }
+
+  private getUser(): string | null {
+    return localStorage.getItem('tracker_user');
+  }
+
+  /* =====================
      Session lifecycle
   ===================== */
 
@@ -73,8 +85,8 @@ export class SessionStorageService {
         fingerprint: null,
         isBot: false,
       },
-      pageHistory: [],
       pages: [],
+      pageHistory: [],
       entryPage: page,
       exitPage: page,
       systemEvents: [],
@@ -98,6 +110,7 @@ export class SessionStorageService {
       finalized: false,
     });
 
+    this.resetInactivityTimer();
     this.saveSession();
     return sess;
   }
@@ -114,11 +127,15 @@ export class SessionStorageService {
       this.sessionStartMs = new Date(parsed.createdAt).getTime();
 
       const meta = this.readMeta();
-      if (meta.sessionId !== parsed.id) {
-        return this.createNewSession();
+      if (parsed.id !== meta.sessionId) return this.createNewSession();
+
+      // SPA: manejar cambio de página automático
+      const currentPath = location.pathname;
+      if (this.isSPA() && meta.currentPage !== currentPath) {
+        this.onPageChange(currentPath);
       }
 
-      this.ensureCurrentPage(location.pathname);
+      this.resetInactivityTimer();
       this.saveSession();
       return parsed;
     } catch {
@@ -148,27 +165,29 @@ export class SessionStorageService {
     this.loadSession();
     this.resetInactivityTimer();
 
-    window.addEventListener('beforeunload', this.handlePageHide, { capture: true });
-    document.addEventListener('visibilitychange', this.handleVisibility, { capture: true });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        this.saveSession();
+      }
+    });
+    window.addEventListener('pagehide', this.handlePageHide, { capture: true });
     window.addEventListener('storage', this.handleStorageEvent);
   }
 
   stopAutoFlush(): void {
-    if (this.inactivityTimer) {
-      clearTimeout(this.inactivityTimer);
-      this.inactivityTimer = null;
-    }
-
-    window.removeEventListener('beforeunload', this.handlePageHide, { capture: true } as any);
-    document.removeEventListener('visibilitychange', this.handleVisibility, { capture: true } as any);
+    if (this.inactivityTimer) clearTimeout(this.inactivityTimer);
+    window.removeEventListener('pagehide', this.handlePageHide, { capture: true });
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
     window.removeEventListener('storage', this.handleStorageEvent);
   }
 
   /* =====================
-     Page handling
+     Page handling (SPA)
   ===================== */
 
   onPageChange(newPage: string): void {
+    if (!this.isSPA()) return;
+
     const now = Date.now();
     const meta = this.readMeta();
 
@@ -176,10 +195,7 @@ export class SessionStorageService {
       const duration = Math.max(0, now - meta.pageStart);
       this.addDuration(meta.currentPage, duration);
       this.pushPageHistory(meta.currentPage, newPage, meta.pageStart, duration);
-      this.addEvent('page_exit', {
-        page: meta.currentPage,
-        duration,
-      });
+      this.addEvent('page_exit', { page: meta.currentPage, duration });
     }
 
     this.ensureCurrentPage(newPage);
@@ -193,6 +209,7 @@ export class SessionStorageService {
     });
 
     this.addEvent('page_view', { page: newPage });
+    this.resetInactivityTimer();
     this.saveSession();
   }
 
@@ -208,12 +225,11 @@ export class SessionStorageService {
     const page = meta.currentPage || location.pathname;
     this.ensureCurrentPage(page);
 
-    const relative = Math.max(0, now - this.sessionStartMs);
     const event: RecordedEvent = {
       type,
       data,
       timestamp: now,
-      relativeTime: relative,
+      relativeTime: Math.max(0, now - this.sessionStartMs),
       page,
     };
 
@@ -225,15 +241,14 @@ export class SessionStorageService {
       p.totalClicks++;
       sess.totalClicks!++;
     }
-
     if (type === 'input') {
       p.totalInputs++;
       sess.totalInputs!++;
     }
 
     this.writeMeta({ ...meta, lastActivity: now });
-    this.saveSession();
     this.resetInactivityTimer();
+    this.saveSession();
   }
 
   updateScrollPercentage(percent: number): void {
@@ -252,14 +267,34 @@ export class SessionStorageService {
   async flushNow(reason: FlushReason = 'manual'): Promise<boolean> {
     if (this.disabled || !this.session || this.isSending) return false;
 
+    if (reason === 'pagehide' || reason === 'visibility') {
+      this.saveSession();
+      return false;
+    }
+
+    const meta = this.readMeta();
+    if (meta.finalized) return false;
+    if ((this.session.systemEvents?.length ?? 0) < 3) return false;
+
+    this.writeMeta({ ...meta, finalized: true });
+    this.session.durationMs = Date.now() - this.sessionStartMs;
+
     this.isSending = true;
     try {
-      const payload = {
-        business_id: this.options.businessId,
-        ...this.session,
-        _reason: reason,
-      };
-      return await this.sendPayload(payload);
+      const payload = { businessId: this.options.businessId, ...this.session, _reason: reason };
+      const success = await this.sendPayload(payload);
+
+      if (success) {
+        // ✅ Mantener sesión activa, limpiar eventos enviados
+        this.session.systemEvents = [];
+        this.session.pages = [];
+        this.session.pageHistory = [];
+
+        this.writeMeta({ ...meta, finalized: false });
+        this.saveSession();
+      }
+
+      return success;
     } finally {
       this.isSending = false;
     }
@@ -294,14 +329,8 @@ export class SessionStorageService {
     const sess = this.requireSession();
     let p = sess.pages.find(x => x.page === page);
     if (!p) {
-      sess.pages.push({
-        page,
-        duration: 0,
-        totalClicks: 0,
-        totalInputs: 0,
-        percentageScroll: 0,
-        events: [],
-      });
+      p = { page, duration: 0, totalClicks: 0, totalInputs: 0, percentageScroll: 0, events: [] };
+      sess.pages.push(p);
       sess.totalPagesVisited!++;
     }
     sess.exitPage = page;
@@ -316,41 +345,22 @@ export class SessionStorageService {
     const sess = this.requireSession();
     let p = sess.pages.find(x => x.page === page);
     if (!p) {
-      p = {
-        page,
-        duration: 0,
-        totalClicks: 0,
-        totalInputs: 0,
-        percentageScroll: 0,
-        events: [],
-      };
+      p = { page, duration: 0, totalClicks: 0, totalInputs: 0, percentageScroll: 0, events: [] };
       sess.pages.push(p);
       sess.totalPagesVisited!++;
     }
     return p;
   }
 
-  private pushPageHistory(
-    page: string,
-    nextPage: string | null,
-    timestamp: number,
-    duration: number = 0
-  ): void {
+  private pushPageHistory(page: string, nextPage: string | null, timestamp: number, duration: number = 0): void {
     const sess = this.requireSession();
-    sess.pageHistory.push({
-      page,
-      previousPage: undefined,
-      timestamp,
-      duration,
-    });
+    sess.pageHistory.push({ page, previousPage: nextPage ?? undefined, timestamp, duration });
   }
 
   private resetInactivityTimer(): void {
     if (this.inactivityTimer) clearTimeout(this.inactivityTimer);
     if (this.options.inactivityMs > 0) {
-      this.inactivityTimer = window.setTimeout(() => {
-        this.flushNow('inactivity');
-      }, this.options.inactivityMs);
+      this.inactivityTimer = window.setTimeout(() => this.flushNow('inactivity'), this.options.inactivityMs);
     }
   }
 
@@ -358,13 +368,7 @@ export class SessionStorageService {
     const raw = localStorage.getItem(this.metaKey);
     if (!raw) {
       const now = Date.now();
-      const meta: MetaState = {
-        sessionId: this.requireSession().id,
-        currentPage: location.pathname,
-        pageStart: now,
-        lastActivity: now,
-        finalized: false,
-      };
+      const meta: MetaState = { sessionId: this.requireSession().id, currentPage: location.pathname, pageStart: now, lastActivity: now, finalized: false };
       this.writeMeta(meta);
       return meta;
     }
@@ -381,30 +385,17 @@ export class SessionStorageService {
     return this.session!;
   }
 
-  private handlePageHide = () => {
-    try {
-      this.flushNow('pagehide');
-    } catch {}
-  };
-
-  private handleVisibility = () => {
-    if (document.visibilityState === 'hidden') {
-      try {
-        this.flushNow('visibility');
-      } catch {}
-    }
-  };
-
+  private handlePageHide = () => this.flushNow('pagehide');
+  private handleVisibilityChange = () => { if (document.visibilityState === 'hidden') this.flushNow('visibility'); };
   private handleStorageEvent = (e: StorageEvent) => {
     if (e.key !== this.storageKey || !e.newValue) return;
-    try {
-      const incoming = JSON.parse(e.newValue) as Session;
-      if (incoming?.id) this.session = incoming;
-    } catch {}
+    try { this.session = JSON.parse(e.newValue) as Session; } catch {}
   };
 
-  private getUser(): string | null {
-    return localStorage.getItem('tracker_user');
+  setFingerprint(fingerprint: string | null): void {
+    const sess = this.requireSession();
+    sess.userInfo.fingerprint = fingerprint;
+    this.saveSession();
   }
 }
 

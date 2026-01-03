@@ -357,6 +357,13 @@
      ;
      });
 
+
+     if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/src/sw/sw-tracking.js')
+        .then(reg => console.log('[SW] Registered', reg))
+        .catch(err => console.error('[SW] Registration failed', err));
+    }
+
    </script>
 
 

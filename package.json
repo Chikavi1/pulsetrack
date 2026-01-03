@@ -29,8 +29,9 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^5.0.1",
     "html2canvas": "^1.4.1",
-    "tslib": "^2.8.1",
-    "@fingerprintjs/fingerprintjs": "^5.0.1"
+    "rrweb": "^2.0.0-alpha.4",
+    "tslib": "^2.8.1"
   }
 }

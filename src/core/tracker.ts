@@ -1,54 +1,93 @@
 // src/SystemTracker.ts
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
-import { Event, EventData, RecordedEvent, TrackedError, Session } from './interfaces';
+import { EventData, RecordedEvent, TrackedError, Session } from './interfaces';
 import { botTracker } from './bot';
 import SessionStorageService from './SessionStorageService';
 
+import { RRWebOrchestrator } from './rrweb/rrweborchestrator';
+import { sendToBackend } from './rrweb/rrwebsender';
+import { RRWebTracker } from './rrweb/rrwebtracker';
+
 export interface TrackerOptions {
   businessId?: string;
-  userId?: string;
 }
 
 export class SystemTracker {
   private readonly endpoint: string;
   private readonly options: TrackerOptions;
-  private session: Session;
+
+  // ⚠️ Session solo para errores y API pública
+  // private session: Session;
+
   private pageUrl: string = window.location.pathname;
-  private maxScroll: number = 0;
+  private maxScroll = 0;
   private lastEventHash: string | null = null;
-  private fingerprint: string | null = null;
+
   private botTracker: botTracker = new botTracker();
-  private sessionStartTime: number;
-  private pageStartTime: number;
+  // private sessionStartTime: number;
   private errors: TrackedError[] = [];
-  private isPaused: boolean = false;
-  private storage: SessionStorageService;
+  private isPaused = false;
+
+  // private storage: SessionStorageService;
+
+
+   private rrwebTracker: RRWebTracker;
+   private rrwebOrchestrator: RRWebOrchestrator;
 
   constructor(options: TrackerOptions = {}) {
     this.options = { ...options };
     this.endpoint = 'http://localhost:3001/sessions';
 
-    // ✅ Storage (single source of truth)
-    this.storage = new SessionStorageService({
-      businessId: options.businessId,
-      inactivityMs: 30000,
-      useBeacon: true,
-    });
-    this.storage.startAutoFlush();
 
-    this.sessionStartTime = Date.now();
-    this.pageStartTime = this.sessionStartTime;
+    this.rrwebTracker = new RRWebTracker();
 
-    // ⚠️ Session se mantiene SOLO para errores y payload final
-    this.session = this.createSession();
+    this.rrwebOrchestrator = new RRWebOrchestrator(
+      this.rrwebTracker,
+      (chunk) => {
+        return sendToBackend({
+          ...chunk,
+          businessId: this.options.businessId,
+        });
+      }
+    );
 
-    this.trackErrors();
-    this.setupNavigationListener();
 
-    (async () => {
-      await this.loadFingerprint();
-      await this.botTracker.initBotDetection();
-    })();
+
+    // ✅ SINGLE SOURCE OF TRUTH
+    // this.storage = new SessionStorageService({
+    //   businessId: options.businessId,
+    //   inactivityMs: 30000,
+    //   useBeacon: true,
+    // });
+
+    // // 🔑 IMPORTANTE: cargar sesión SIEMPRE
+    // this.storage.startAutoFlush();
+
+    // this.sessionStartTime = Date.now();
+    // this.session = this.createSession();
+
+    // this.trackErrors();
+
+    // // ✅ SOLO SPA maneja navegación manual
+    // if (this.isSPA()) {
+    //   this.setupNavigationListener();
+    // }
+
+    // (async () => {
+    //   await this.injectFingerprintOnce();
+    //   await this.botTracker.initBotDetection();
+    // })();
+  }
+
+  /* =====================
+     Utils
+  ===================== */
+
+  private isSPA(): boolean {
+    return (
+      !!(window.history && history.pushState) &&
+      !!document.querySelector('#app, #root, [data-router], body[data-spa]')
+    );
   }
 
   /* =====================
@@ -60,18 +99,12 @@ export class SystemTracker {
     this.recordEvent(type, payload);
   }
 
-  public startTracking(): void {
-    this.listenClicks();
-    this.listenInputs();
-    this.listenScroll();
-    this.listenInternalLinks();
-  }
-
   public init(): void {
     this.startTracking();
   }
 
   public start(): void {
+   this.rrwebOrchestrator.start();
     this.startTracking();
   }
 
@@ -87,21 +120,20 @@ export class SystemTracker {
   }
 
   public async stop(): Promise<void> {
-    await this.storage.flushNow('manual');
-    await this.endSession();
+    this.rrwebOrchestrator.stop();
+    // await this.storage.flushNow('manual');
   }
 
   public clear(): void {
-    this.storage.restartSession();
+    // this.storage.restartSession();
   }
 
   public reset(): void {
-    this.session = this.createSession();
+    // this.session = this.createSession();
     this.pageUrl = window.location.pathname;
     this.maxScroll = 0;
     this.lastEventHash = null;
-    this.sessionStartTime = Date.now();
-    this.pageStartTime = this.sessionStartTime;
+    // this.sessionStartTime = Date.now();
     this.errors = [];
     this.isPaused = false;
   }
@@ -109,17 +141,16 @@ export class SystemTracker {
   public getData(): Session | null {
     const data = localStorage.getItem('pt:session:v1');
     if (!data) return null;
-
     try {
       return JSON.parse(data);
-    } catch (error) {
-      console.error('Failed to parse session data:', error);
+    } catch {
       return null;
     }
   }
 
   public getEvents(): RecordedEvent[] {
-    return this.session.systemEvents;
+    // return this.session.systemEvents;
+    return [];
   }
 
   public getErrors(): TrackedError[] {
@@ -138,7 +169,8 @@ export class SystemTracker {
       type,
       data,
       timestamp: now,
-      relativeTime: now - this.sessionStartTime,
+        relativeTime: now,
+        //  now - (this.sessionStartTime || now),
       page: this.pageUrl,
     };
 
@@ -146,101 +178,49 @@ export class SystemTracker {
     if (this.lastEventHash === hash) return;
     this.lastEventHash = hash;
 
-    // ⚠️ SystemTracker NO modifica contadores ni páginas
-    // ⚠️ Solo emite el evento
-    this.session.systemEvents.push(event);
-
-    // ✅ Persistencia centralizada
-    this.storage.addEvent(type, data);
+    // this.storage.addEvent(type, data);
   }
 
   /* =====================
-     Page management
+     Navigation (SPA ONLY)
   ===================== */
 
-  private generateSession() {
-    return `sess_${Date.now()}`;
-  }
-
-  private createSession(): Session {
-    const initialPage = window.location.pathname;
-    const now = Date.now();
-
-    return {
-      id: this.generateSession(),
-      createdAt: new Date().toISOString(),
-      userId: this.getUser() ?? undefined,
-      errors: [],
-      userInfo: {
-        browser: navigator.userAgent,
-        platform: navigator.platform,
-        language: navigator.language,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        deviceType: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
-        screen: { width: window.innerWidth, height: window.innerHeight },
-        fingerprint: null,
-        isBot: false,
-      },
-      pages: [],
-      pageHistory: [{
-        page: initialPage,
-        timestamp: now,
-        previousPage: undefined,
-        duration: 0
-      }],
-      entryPage: initialPage,
-      exitPage: initialPage,
-      systemEvents: [],
-      totalClicks: 0,
-      totalInputs: 0,
-      totalPagesVisited: 1,
-      rrwebEvents: [],
-    };
-  }
-
   private handlePageChange(newPage: string): void {
-    const now = Date.now();
-    const oldPage = this.pageUrl;
-
-    if (newPage === oldPage) return;
-
-    const pageDuration = now - this.pageStartTime;
-
-    this.recordEvent('page_exit', {
-      page: oldPage,
-      duration: pageDuration,
-      maxScroll: this.maxScroll,
-    });
+    if (newPage === this.pageUrl) return;
 
     this.maxScroll = 0;
     this.lastEventHash = null;
     this.pageUrl = newPage;
-    this.pageStartTime = now;
 
-    this.session.exitPage = newPage;
+    // this.storage.onPageChange(newPage);
+  }
 
-    this.session.pageHistory.push({
-      page: newPage,
-      timestamp: now,
-      previousPage: oldPage,
-      duration: 0
-    });
+  private setupNavigationListener(): void {
+    if ((window as any).__ptHistoryPatched) return;
+    (window as any).__ptHistoryPatched = true;
 
-    const uniquePages = new Set(this.session.pageHistory.map(p => p.page));
-    this.session.totalPagesVisited = uniquePages.size;
+    const handler = () => {
+      this.handlePageChange(window.location.pathname);
+    };
 
-    // ✅ Importante: storage decide la página actual
-    this.storage.onPageChange(newPage);
+    window.addEventListener('popstate', handler);
 
-    this.recordEvent('page_view', {
-      page: newPage,
-      previousPage: oldPage,
-    });
+    const originalPush = history.pushState;
+    history.pushState = (...args) => {
+      originalPush.apply(history, args);
+      handler();
+    };
   }
 
   /* =====================
      Listeners
   ===================== */
+
+  private startTracking(): void {
+    this.listenClicks();
+    this.listenInputs();
+    this.listenScroll();
+  }
 
   private listenClicks(): void {
     document.body.addEventListener('click', (e: MouseEvent) => {
@@ -257,16 +237,16 @@ export class SystemTracker {
   }
 
   private listenInputs(): void {
-    const inputTimeouts = new WeakMap<Element, number>();
+    const timeouts = new WeakMap<Element, number>();
 
     document.body.addEventListener('input', (e: any) => {
       const target = e.target as HTMLInputElement | HTMLTextAreaElement;
       if (!target || !['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
 
-      const prevTimeout = inputTimeouts.get(target);
-      if (prevTimeout) clearTimeout(prevTimeout);
+      const prev = timeouts.get(target);
+      if (prev) clearTimeout(prev);
 
-      const timeoutId = window.setTimeout(() => {
+      const id = window.setTimeout(() => {
         if (!target.value) return;
 
         this.recordEvent('input', {
@@ -277,105 +257,64 @@ export class SystemTracker {
         });
       }, 500);
 
-      inputTimeouts.set(target, timeoutId);
+      timeouts.set(target, id);
     });
   }
 
   private listenScroll(): void {
     window.addEventListener('scroll', () => {
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (scrollHeight <= 0) return;
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      if (total <= 0) return;
 
-      const percent = Math.round((window.scrollY / scrollHeight) * 100);
+      const percent = Math.round((window.scrollY / total) * 100);
       if (percent > this.maxScroll) {
         this.maxScroll = percent;
-
-        // ⚠️ No tocar session.pages aquí
-        this.storage.updateScrollPercentage(percent);
+        // this.storage.updateScrollPercentage(percent);
       }
     });
   }
 
-  private setupNavigationListener(): void {
-    if ((window as any).__ptHistoryPatched) return;
-    (window as any).__ptHistoryPatched = true;
-
-    const handleNavigation = () => {
-      const newUrl = window.location.pathname;
-      this.handlePageChange(newUrl);
-    };
-
-    window.addEventListener('popstate', handleNavigation);
-
-    const pushState = history.pushState;
-    history.pushState = (...args) => {
-      pushState.apply(history, args);
-      handleNavigation();
-    };
-  }
-
-  private listenInternalLinks(): void {
-  document.body.addEventListener('click', (e: MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (!target) return;
-
-    const link = target.closest('a[href]');
-    if (!link) return;
-
-    const href = link.getAttribute('href');
-    if (!href) return;
-    if (href.startsWith('http') || href.startsWith('//')) return; // links externos ignorados
-
-    // Llama a tu método interno de cambio de página
-    this.handlePageChange(href);
-  });
-}
-
   /* =====================
-     Fingerprint & Bot
+     Fingerprint
   ===================== */
 
-  public async getFingerprint(): Promise<string | null> {
-    const fp = await FingerprintJS.load();
-    const result = await fp.get();
-    return result.visitorId;
-  }
+  private async injectFingerprintOnce(): Promise<void> {
+    const data = this.getData();
+    if (data?.userInfo?.fingerprint) return;
 
-  private async loadFingerprint(): Promise<void> {
     try {
-      this.fingerprint = await this.getFingerprint();
-      this.session.userInfo.fingerprint = this.fingerprint;
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+        // this.storage.setFingerprint(result.visitorId);
     } catch {
-      this.fingerprint = null;
-      this.session.userInfo.fingerprint = null;
+      // this.storage.setFingerprint(null);
     }
   }
 
   /* =====================
-     Error tracking
+     Errors
   ===================== */
 
   private trackErrors(): void {
-    const recordError = (err: TrackedError, type: string) => {
+    const record = (err: TrackedError, type: string) => {
       err.hash = this.generateErrorHash(err);
 
-      const exists = this.errors.find(e => e.hash === err.hash);
-      if (exists) {
-        exists.count = (exists.count || 1) + 1;
-        exists.lastOccurred = Date.now();
+      const existing = this.errors.find(e => e.hash === err.hash);
+      if (existing) {
+        existing.count = (existing.count || 1) + 1;
+        existing.lastOccurred = Date.now();
         return;
       }
 
       err.count = 1;
       err.lastOccurred = Date.now();
       this.errors.push(err);
-      this.session.errors.push(err);
 
-      this.recordEvent(type, err);
+      // this.storage.addEvent(type, err);
     };
 
-    window.addEventListener('error', (e: ErrorEvent) => {
-      recordError({
+    window.addEventListener('error', e => {
+      record({
         message: e.message,
         stack: e.error?.stack,
         source: e.filename,
@@ -388,8 +327,8 @@ export class SystemTracker {
       }, 'error');
     });
 
-    window.addEventListener('unhandledrejection', (e: PromiseRejectionEvent) => {
-      recordError({
+    window.addEventListener('unhandledrejection', e => {
+      record({
         message: String(e.reason),
         stack: e.reason?.stack,
         timestamp: Date.now(),
@@ -411,47 +350,50 @@ export class SystemTracker {
   }
 
   /* =====================
-     Session & Payload
+     Session
   ===================== */
 
-  private async endSession(): Promise<void> {
-    const payload = JSON.stringify(this.getPayload());
-    await this.sendPayload(payload);
+  private generateSession() {
+    return `sess_${Date.now()}`;
   }
 
-  private async sendPayload(payload: string): Promise<void> {
-    if (navigator.sendBeacon) {
-      try {
-        const blob = new Blob([payload], { type: 'application/json' });
-        if (navigator.sendBeacon(this.endpoint, blob)) return;
-      } catch {}
-    }
+  private createSession(): Session {
+    const page = window.location.pathname;
+    const now = Date.now();
 
-    await fetch(this.endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: payload,
-      credentials: 'include',
-    });
+    return {
+      id: this.generateSession(),
+      createdAt: new Date().toISOString(),
+      userId: this.getUser() ?? undefined,
+      errors: [],
+      userInfo: {
+        browser: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        deviceType: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+        screen: { width: window.innerWidth, height: window.innerHeight },
+        fingerprint: null,
+        isBot: false,
+      },
+      pages: [],
+      pageHistory: [{
+        page,
+        timestamp: now,
+        previousPage: undefined,
+        duration: 0,
+      }],
+      entryPage: page,
+      exitPage: page,
+      systemEvents: [],
+      totalClicks: 0,
+      totalInputs: 0,
+      totalPagesVisited: 1,
+      rrwebEvents: [],
+    };
   }
 
   private getUser() {
-    return localStorage.getItem('tracker_user') || null;
-  }
-
-  private getPayload(): any {
-    const now = Date.now();
-    const sessionDuration = now - this.sessionStartTime;
-
-    this.session.exitPage = this.pageUrl;
-    this.recordEvent('session_end', {
-      duration: sessionDuration,
-      maxScroll: this.maxScroll,
-    });
-
-    return {
-      business_id: this.options.businessId,
-      ...this.session,
-    };
+    return localStorage.getItem('tracker_user');
   }
 }
