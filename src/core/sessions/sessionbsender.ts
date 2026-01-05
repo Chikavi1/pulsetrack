@@ -1,29 +1,11 @@
-// import type { RRWebChunk } from './rrweborchestrator';
+import type { RRWebChunk } from './sessionorchestrator';
 
-// export async function sendToBackend(chunk: RRWebChunk): Promise<boolean> {
-//   try {
-//     const isFirstChunk = chunk.events.some(e => e.type === 2);
-
-//     const res = await fetch('http://localhost:3001/sessions/ingest', {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify(chunk),
-//       keepalive: !isFirstChunk, // ✅ CLAVE
-//     });
-
-//     return res.ok;
-//   } catch (err) {
-//     console.warn('❌ Error enviando rrweb chunk', err);
-//     return false;
-//   }
-// }
-
-
-import type { RRWebChunk } from './rrweborchestrator';
- 
 export async function sendToBackend(chunk: RRWebChunk): Promise<boolean> {
   try {
     const isFirstChunk = chunk.events.some(e => e.type === 2);
+    const isExit =
+      chunk.reason === 'pagehide' ||
+      chunk.reason === 'unload';
 
     const payload = {
       ...chunk,
@@ -36,15 +18,16 @@ export async function sendToBackend(chunk: RRWebChunk): Promise<boolean> {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-      keepalive: !isFirstChunk, // ✅ clave para pagehide
+      keepalive: isExit, // 🔑 solo salida real
     });
 
     return res.ok;
-  } catch (err) {
-    console.warn('❌ Error enviando rrweb chunk', err);
+  } catch {
     return false;
   }
 }
+
+
 
 export function collectClientInfo() {
   return {

@@ -91,6 +91,22 @@
                     <span class="material-symbols-outlined mr-1 text-sm">send</span>
                     Enviar Datos
                 </button>
+                
+                <!-- Error Buttons -->
+                <div class="flex items-center space-x-2 ml-2 border-l border-slate-200 dark:border-slate-700 pl-2">
+                    <button id="standardErrorBtn" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors">
+                        <span class="material-symbols-outlined mr-1 text-sm">error</span>
+                        Generar Error
+                    </button>
+                    <button id="typeErrorBtn" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+                        <span class="material-symbols-outlined mr-1 text-sm">warning</span>
+                        Generar TypeError
+                    </button>
+                    <button id="referenceErrorBtn" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                        <span class="material-symbols-outlined mr-1 text-sm">bug_report</span>
+                        Generar ReferenceError
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -331,7 +347,7 @@
    <!-- <script type="module" src="./tracking.js"></script> -->
 
    <script  type="module">
-        import { PulseTrack } from '../dist/index.js';
+    import { PulseTrack } from '../dist/index.js';
 
     PulseTrack.init({ businessId: '080fbac4-2aa8-4016-89ee-e339bd3c1c16' });
 
@@ -353,16 +369,22 @@
 
      sendDataButton.addEventListener('click', () => {
        console.log('Send data button clicked');
-
-     ;
      });
 
+     // Manejadores para los botones de error
+     document.getElementById('standardErrorBtn').addEventListener('click', () => {
+       throw new Error('Este es un error estándar');
+     });
 
-     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/src/sw/sw-tracking.js')
-        .then(reg => console.log('[SW] Registered', reg))
-        .catch(err => console.error('[SW] Registration failed', err));
-    }
+     document.getElementById('typeErrorBtn').addEventListener('click', () => {
+       const obj = null;
+       obj.someMethod();  
+     });
+
+     document.getElementById('referenceErrorBtn').addEventListener('click', () => {
+       console.log(variableNoDefinida); 
+     });
+
 
    </script>
 

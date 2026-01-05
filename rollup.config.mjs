@@ -2,43 +2,62 @@ import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
+import javascriptObfuscator from 'rollup-plugin-javascript-obfuscator';
+
+const commonPlugins = [
+  resolve({ browser: true }),
+  commonjs(),
+  typescript({ tsconfig: './tsconfig.json' }),
+  terser({ mangle: true, compress: true }),
+  javascriptObfuscator({
+    compact: true,
+    controlFlowFlattening: true,
+    deadCodeInjection: true,
+    stringArrayEncoding: 'rc4',
+    rotateStringArray: true
+  })
+];
 
 export default [
-  // ESM + CJS
+  // ESM
   {
     input: 'src/index.ts',
-    output: [
-      { dir: 'dist', format: 'esm', entryFileNames: '[name].js' },
-      { dir: 'dist', format: 'cjs', entryFileNames: '[name].cjs.js' }
-    ],
-    plugins: [
-      resolve({ browser: true }),
-      commonjs(),
-      typescript({ tsconfig: './tsconfig.json' })
-    ]
+    output: {
+      file: 'dist/pulsetrack.esm.js',
+      format: 'esm',
+      sourcemap: false
+    },
+    plugins: commonPlugins
   },
 
-  // UMD para navegador
+  // CJS
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'dist/pulsetrack.cjs.js',
+      format: 'cjs',
+      sourcemap: false
+    },
+    plugins: commonPlugins
+  },
+
+  // UMD
   {
     input: 'src/index.ts',
     output: [
       {
         file: 'dist/pulsetrack.umd.js',
         format: 'umd',
-        name: 'PulseTrack'
+        name: 'PulseTrack',
+        sourcemap: false
       },
       {
         file: 'dist/pulsetrack.umd.min.js',
         format: 'umd',
         name: 'PulseTrack',
-        plugins: [terser({ format: { comments: false } })]
+        sourcemap: false
       }
     ],
-    plugins: [
-      resolve({ browser: true }),
-      commonjs(),
-      typescript({ tsconfig: './tsconfig.json' }),
-      terser()
-    ]
+    plugins: commonPlugins
   }
 ];

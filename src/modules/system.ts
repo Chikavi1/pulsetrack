@@ -14,9 +14,9 @@ interface SystemTrackerAPI {
   /** Reset tracker to initial state */
   reset(): void;
   /** Get current tracking data */
-  getData(): void
+  getData(): void;
   /** Track a custom event */
-  track(type: string, payload?: any): void;
+  addTag(type: string, payload?: any): void;
 }
 
 export const systemTracker: SystemTrackerAPI = {
@@ -26,5 +26,5 @@ export const systemTracker: SystemTrackerAPI = {
   stop: () => tracker.stop(),
   reset: () => tracker.reset(),
   getData: () => tracker.getData(),
-  track: (type: string, payload?: any) => tracker.track(type, payload),
+  addTag: (type: string, payload?: any) => tracker.addTag(type, payload),
 };

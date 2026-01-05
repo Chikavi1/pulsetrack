@@ -268,45 +268,37 @@ class FeedbackWidget {
     formData.append('userId', this.getUser());
     formData.append('timestamp', new Date().toISOString());
  
-    // ---------- SCREENSHOT ----------
     if (this.currentScreenshot) {
       const blob = this.base64ToBlob(this.currentScreenshot);
       formData.append('screenshot', blob, 'screenshot.png');
     }
 
-    // ---------- TRACKING (SIN BASE64) ----------
-    this.tracker.track('feedback_submitted', {
+    this.tracker.addTag('feedback_submitted', {
       type: this.feedbackType,
       hasScreenshot: !!this.currentScreenshot,
       url: window.location.href,
       businessId,
     });
 
-
-    console.log('Feedback data:', formData);
  
-    // ---------- SEND ----------
     const response = await fetch('http://localhost:3001/feedback', {
       method: 'POST',
-      body: formData, // 👈 sin headers
+      body: formData,
     });
 
     if (!response.ok) {
       throw new Error(`HTTP error ${response.status}`);
     }
 
-    // ---------- SUCCESS UI ----------
     const feedbackContent = document.getElementById('feedback-content');
 
     if (feedbackContent) {
       feedbackContent.classList.add('hidden');
     }
 
-    // Mostrar solo el mensaje de éxito
     successMessage.classList.remove('hidden');
     successMessage.style.animation = 'fadeIn 0.3s ease-out';
 
-    // Cerrar automáticamente después de unos segundos
     setTimeout(() => {
       this.toggleFeedbackWindow();
       setTimeout(() => this.resetForm(), 300);
@@ -352,22 +344,18 @@ class FeedbackWidget {
     if (buttonsContainer) buttonsContainer.classList.remove('hidden');
     if (selectedOptionContainer) selectedOptionContainer.classList.add('hidden');
 
-    // Reset submit button
     if (submitBtn && submitText && submitSpinner) {
       submitBtn.disabled = true;
       submitText.textContent = 'Enviar feedback';
       submitSpinner.classList.add('hidden');
     }
     
-    // Reset feedback type
     this.feedbackType = '';
     this.toggleForm(false);
     
-    // Remove screenshot
     this.removeScreenshot();
     this.currentScreenshot = '';
     
-    // Reset button styles
     document.querySelectorAll('#feedback-bug, #feedback-improvement').forEach(btn => {
       btn.classList.remove('!border-red-500', '!bg-red-700', 'text-white', '!border-blue-500', '!bg-blue-700');
       btn.classList.add('!border-gray-300', '!bg-gray-100', 'text-gray-700');
@@ -418,7 +406,7 @@ class FeedbackWidget {
     button.addEventListener('click', () => {
       this.toggleFeedbackWindow();
       const { businessId } = getConfig();
-      this.tracker.track('feedback_opened', { businessId });
+      this.tracker.addTag('feedback_opened', { businessId });
     });
     
     this.container = button;
@@ -575,7 +563,6 @@ class FeedbackWidget {
       </div>
     `;
     
-    // Add event listeners
     windowElement.querySelector('#close-feedback')?.addEventListener('click', () => this.toggleFeedbackWindow());
     windowElement.querySelector('#feedback-bug')?.addEventListener('click', () => this.setFeedbackType('error'));
     windowElement.querySelector('#feedback-improvement')?.addEventListener('click', () => this.setFeedbackType('suggested'));
@@ -590,7 +577,6 @@ class FeedbackWidget {
       setTimeout(() => this.resetForm(), 300);
     });
     
-    // Add input validation
     windowElement.querySelector('#feedback-description')?.addEventListener('input', (e) => {
       const submitBtn = windowElement.querySelector('#submit-feedback') as HTMLButtonElement;
       if (submitBtn) {
@@ -605,7 +591,6 @@ class FeedbackWidget {
 
 
    addStyles() {
-    // Add Tailwind CSS if not already present
     if (!document.getElementById('tailwind-css')) {
       const link = document.createElement('link');
       link.id = 'tailwind-css';
@@ -615,7 +600,6 @@ class FeedbackWidget {
       document.head.appendChild(link);
     }
     
-    // Add custom styles
     const style = document.createElement('style');
     style.textContent = `
       @keyframes fadeIn {
