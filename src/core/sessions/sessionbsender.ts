@@ -14,7 +14,7 @@ export async function sendToBackend(chunk: RRWebChunk): Promise<boolean> {
       clientInfo: isFirstChunk ? collectClientInfo() : undefined,
     };
 
-    const res = await fetch('http://localhost:3001/sessions/ingest', {
+    const res = await fetch('https://dev.rojastudio.xyz/sessions/ingest', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

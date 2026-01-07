@@ -281,7 +281,7 @@ class FeedbackWidget {
     });
 
  
-    const response = await fetch('http://localhost:3001/feedback', {
+    const response = await fetch('https://dev.rojastudio.xyz/feedback', {
       method: 'POST',
       body: formData,
     });

@@ -13,7 +13,7 @@ export function initConfig(userConfig: PulseConfig) {
   }
 
   config = {
-    endpoint: 'http://localhost:3001',
+    endpoint: 'https://dev.rojastudio.xyz',
     environment: 'prod',
     ...userConfig,
   };

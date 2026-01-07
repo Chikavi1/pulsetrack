@@ -2,7 +2,7 @@ export class botTracker {
 
     private botDetector!: BotDetector;
     private botInfo: BotDetectionResult | null = null;
-    private endpoint = 'http://localhost:3001/sessions';
+    private endpoint = 'https://dev.rojastudio.xyz/sessions';
     events: any;
     options: any;
     
