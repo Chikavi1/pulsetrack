@@ -1,7 +1,9 @@
 export interface PulseConfig {
   businessId: string;
   endpoint?: string;
+  remote?: boolean;
   environment?: 'dev' | 'prod';
+  announcement?: Record<string, any>;
 }
 
 let config: PulseConfig | null = null;

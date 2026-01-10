@@ -11,7 +11,7 @@ export async function sendToBackend(chunk: RRWebChunk): Promise<boolean> {
       ...chunk,
       pageUrl: location.href,
       referrer: document.referrer,
-      clientInfo: isFirstChunk ? collectClientInfo() : undefined,
+      clientInfo: isFirstChunk ? await collectClientInfo() : undefined,
     };
 
     const res = await fetch('https://dev.rojastudio.xyz/sessions/ingest', {
@@ -29,9 +29,9 @@ export async function sendToBackend(chunk: RRWebChunk): Promise<boolean> {
 
 
 
-export function collectClientInfo() {
+export async function collectClientInfo() {
   return {
-    browser: navigator.userAgent,
+    browser: await detectBrowser(),
     language: navigator.language,
     languages: navigator.languages,
     platform: navigator.platform,
@@ -51,3 +51,24 @@ export function collectClientInfo() {
     },
   };
 }
+
+async function detectBrowser() {
+  const nav = navigator as any;
+
+  if (nav.userAgentData?.brands?.length) {
+    return nav.userAgentData.brands
+      .map((b: any) => b.brand)
+      .join(', ');
+  }
+
+  const ua = navigator.userAgent;
+
+  if (/Firefox\/\d+/i.test(ua)) return 'Firefox';
+  if (/Edg\/\d+/i.test(ua)) return 'Edge';
+  if (/Brave/i.test(ua)) return 'Brave';
+  if (/Chrome\/\d+/i.test(ua)) return 'Chrome';
+  if (/Safari\/\d+/i.test(ua)) return 'Safari';
+
+  return 'Unknown';
+}
+

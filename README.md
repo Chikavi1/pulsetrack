@@ -1,7 +1,6 @@
 # PulseTrack
 
 [![npm version](https://img.shields.io/npm/v/pulsetrack.svg?style=flat-square)](https://www.npmjs.com/package/pulsetrack)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg?style=flat-square)](https://www.typescriptlang.org/)
 
 PulseTrack is a lightweight analytics and feedback collection library designed for modern web applications. It provides developers with powerful tools to understand user behavior, collect feedback, and make data-driven decisions.
@@ -54,7 +53,7 @@ tracker.track('user_action', { action: 'button_click', buttonId: 'cta-button' })
 
 ## 📚 Documentation
 
-For detailed documentation, please visit our [documentation website](https://pulsetrack.dev/docs).
+For detailed documentation, please visit our [documentation website](https://docs.rojastudio.xyz).
 
 ### Available Plugins
 
@@ -68,13 +67,4 @@ For detailed documentation, please visit our [documentation website](https://pul
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `businessId` | string | - | Your business identifier (required) |
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) to get started.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-Built with ❤️ by the PulseTrack team
+ 

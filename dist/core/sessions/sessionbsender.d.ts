@@ -1,7 +1,7 @@
 import type { RRWebChunk } from './sessionorchestrator';
 export declare function sendToBackend(chunk: RRWebChunk): Promise<boolean>;
-export declare function collectClientInfo(): {
-    browser: string;
+export declare function collectClientInfo(): Promise<{
+    browser: any;
     language: string;
     languages: readonly string[];
     platform: string;
@@ -18,5 +18,5 @@ export declare function collectClientInfo(): {
         memory: any;
         cores: number;
     };
-};
+}>;
 //# sourceMappingURL=sessionbsender.d.ts.map

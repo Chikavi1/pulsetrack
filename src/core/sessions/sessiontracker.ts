@@ -11,24 +11,40 @@ export class RRWebTracker {
   private hasFullSnapshot = false;
 
   start() {
-    if (this.recording) return;
+  if (this.recording) return;
 
-    const stop = record({
-      emit: (event: RRWebEvent) => {
-        if (event.type === 2) this.hasFullSnapshot = true;
-        this.buffer.push(event);
-      },
-      checkoutEveryNms: 30_000,
-      maskTextClass: 'pt-sensitive',
-      ignoreClass: 'pt-ignore',
-      blockClass: 'pt-block',
+  const stop = record({
+    emit: (event: RRWebEvent) => {
+      if (event.type === 2) this.hasFullSnapshot = true;
+      this.buffer.push(event);
+    },
 
-      maskTextSelector: '[data-sensitive="true"]',
-    });
+    // 🧠 SNAPSHOTS
+    checkoutEveryNms: 60_000, // ⬅️ más largo, menos peso
+    checkoutEveryNth: 0,
 
-    this.stopFn = stop ?? null;
-    this.recording = true;
-  }
+    sampling: {
+      mousemove: false,      // ⬅️ mata MBs
+      mouseInteraction: true,
+      scroll: 200,           // 1 evento cada 200ms
+      input: 'last',         // solo valor final
+      media: 0,
+      canvas: 0,
+    },
+
+    // 🧼 PRIVACIDAD / OPTIMIZACIÓN
+    maskTextClass: 'pt-sensitive',
+    maskTextSelector: '[data-sensitive="true"]',
+    ignoreClass: 'pt-ignore',
+    blockClass: 'pt-block',
+
+      
+  });
+
+  this.stopFn = stop ?? null;
+  this.recording = true;
+}
+
 
   addTag(type: string, data: Record<string, any> = {}) {
     if (!this.recording) return;
