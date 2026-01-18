@@ -192,7 +192,7 @@
     <button id="btn-click" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition-colors">Click Event</button>
     <button id="btn-double-click" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded transition-colors">Double Click</button>
     <button id="btn-mouseover" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded transition-colors">Hover Me</button>
-    <button id="btn-logs" class="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded transition-colors">Show Logs</button>
+    <button id="btn-logs" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors">mostrar logs</button>
   </div>
 
   <!-- Login Section -->
@@ -343,17 +343,74 @@
   </div>
 
 
-   <script type="module" src="./feedback.js"></script>
-   <!-- <script type="module" src="./tracking.js"></script> -->
+     <!-- <script type="module" src="./feedback.js"></script> -->
+    <!-- <script type="module" src="./tracking.js"></script>  -->
 
-   <script  type="module">
+    <script src="../dist/pulsetrack.umd.min.js"></script>
+     <script type="module">
+      window.addEventListener('load', () => {
+        const pt = window.PulseTrack?.PulseTrack;
+        if (!pt) return;
+
+        pt.init({
+          businessId: '080fbac4-2aa8-4016-89ee-e339bd3c1c16',
+          remote: true
+        });
+         pt.Feedback()
+         pt.Announcement()
+         pt.Nps()
+      });
+    </script>
+
+   <!-- <script  type="module">
     import { PulseTrack } from '../dist/index.js';
+
+    pt.Feedback({
+          position: 'bottom-right',
+          buttonText: 'Dar Feedback',
+          themeColor: '#3b82f6',
+          autoOpen: false,
+        });
+
+        pt.Announcement({
+          message: '¡Nuevo producto disponible!',
+          title: 'Anuncio',
+          linkUrl: 'https://rojastudio.xyz',
+          linkText: 'Ver más',
+          type: 'info',
+          themeColor: '#3b82f6',
+          autoShow: true, 
+          dismissible: true,
+        });
+
+        pt.Nps({
+          question: '¿Qué tan probable es que recomiendes este servicio?',
+          autoShow: true,
+        });
 
     PulseTrack.init({ businessId: '080fbac4-2aa8-4016-89ee-e339bd3c1c16' });
 
      const clearDataButton = document.getElementById('clearData');
      const showDataButton = document.getElementById('showData');
      const sendDataButton = document.getElementById('sendData');
+
+     const tracker = new PulseTrack({
+       businessId: '080fbac4-2aa8-4016-89ee-e339bd3c1c16'
+     });
+
+     PulseTrack.Feedback({
+      position: 'bottom-right',
+      buttonText: 'Dar opinión',
+      themeColor: '#000',
+      autoOpen: true,
+    });
+
+     tracker.addTag('tag', 'test');
+
+     const buttonTag = document.getElementById('buttonTag');
+     buttonTag.addEventListener('click', () => {
+       tracker.addTag('tag', 'test');
+     });
 
 
 
@@ -386,7 +443,20 @@
      });
 
 
-   </script>
+   </script>  
+
+  <script src="https://raw.githubusercontent.com/Chikavi1/pulsetrack/refs/heads/master/dist/pulsetrack.umd.min.js"></script>
+     <script type="module">
+      window.addEventListener('load', () => {
+        // ⚡ Acceder a la propiedad PulseTrack dentro del objeto global
+        const pt = window.PulseTrack?.PulseTrack;
+        if (!pt) return;
+
+        pt.init({
+          businessId: '080fbac4-2aa8-4016-89ee-e339bd3c1c16'
+        });
+      });
+    </script> -->
 
 
  

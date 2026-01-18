@@ -169,7 +169,7 @@ export class Nps {
 
     try {
       const config = getConfig();
-      const baseUrl = config.endpoint || 'https://dev.rojastudio.xyz';
+      const baseUrl = config.endpoint || 'https://api.rojastudio.xyz';
       const endpoint = `${baseUrl.replace(/\/$/, '')}/nps`;
 
       const payload = {

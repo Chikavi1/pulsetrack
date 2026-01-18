@@ -9,3 +9,10 @@
     //   themeColor: '#000', // blue-500
     //   autoOpen: false,
     // });
+
+    pt.Feedback({
+     position: 'bottom-right',
+     buttonText: 'Dar Feedback',
+     themeColor: '#000',
+     autoOpen: false,
+   });

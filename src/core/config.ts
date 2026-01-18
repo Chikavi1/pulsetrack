@@ -15,7 +15,7 @@ export function initConfig(userConfig: PulseConfig) {
   }
 
   config = {
-    endpoint: 'https://dev.rojastudio.xyz',
+    endpoint: 'https://api.rojastudio.xyz',
     environment: 'prod',
     ...userConfig,
   };

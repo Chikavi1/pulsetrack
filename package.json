@@ -1,6 +1,6 @@
 {
   "name": "@pulsetrackme/sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A lightweight analytics and feedback collection library for modern web applications",
   "type": "module",
   "main": "dist/index.cjs",

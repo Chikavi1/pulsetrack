@@ -28,15 +28,16 @@ class FeedbackWidget {
   constructor(config: FeedbackConfig) {
     if (!config.tracker) throw new Error('Feedback requires tracker');
 
+   
+
     this.tracker = config.tracker;
     this.config = {
-      position: 'bottom-right',
-      themeColor: '#4f46e5',
-      buttonText: 'Feedback',
-      autoOpen: false,
+      position: config.position || 'bottom-left',
+      themeColor: config.themeColor || '#4f46e5',
+      buttonText: config.buttonText || 'Feedback',
+      autoOpen: config.autoOpen || false,
       ...config,
     };
-
     this.init();
   }
 
@@ -44,7 +45,7 @@ class FeedbackWidget {
     this.addStyles();
     this.createButton();
     this.createFeedbackWindow();
-    if (this.config.autoOpen) this.toggleFeedbackWindow();
+    if (this.config.autoOpen === true) this.toggleFeedbackWindow();
   }
 
   getPositionStyle() {
@@ -136,7 +137,7 @@ class FeedbackWidget {
       fd.append('screenshot', this.base64ToBlob(this.currentScreenshot));
     }
 
-    await fetch('https://dev.rojastudio.xyz/feedback', {
+    await fetch('https://api.rojastudio.xyz/feedback', {
       method: 'POST',
       body: fd,
     });

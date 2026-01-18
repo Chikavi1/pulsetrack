@@ -31,7 +31,7 @@ class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = 'https://dev.rojastudio.xyz';
+const API_BASE_URL = 'https://api.rojastudio.xyz';
 
 /**
  * Fetches configuration from the init endpoint

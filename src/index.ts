@@ -27,12 +27,10 @@ export const PulseTrack = {
       try {
         // Fetch remote config if enabled
         if (config.remote) {
-          console.log('Fetching remote configuration...');
           const response = await fetchInitConfig<{ data: any }>(config.businessId);
           
           if (response.ok) {
             remoteResponse = response.data;
-            console.log('Remote configuration loaded:', response.data);
             // Merge remote config with local config
             config = { ...config, ...response.data };
           } else {
@@ -68,27 +66,22 @@ export const PulseTrack = {
 
   async Feedback(options?: Omit<Parameters<typeof FeedbackFactory>[0], 'tracker'>) {
     await this.ensureReady();
-    let data = remoteResponse.feedback;
+    let data = remoteResponse.data.feedback;
     if(options) data = options
-
-    console.log('data', data)
     return FeedbackFactory({ tracker: this.tracker(), ...data });
   },
 
   async Announcement(options?: Omit<AnnouncementConfig, 'tracker'>) {
     await this.ensureReady();
-    console.log('remote options', remoteResponse.announcements)
-    console.log('options', options);
-
-
-    console.log('data more remote', { tracker: this.tracker(), ...remoteResponse.announcements });
-    console.log('data more ', { tracker: this.tracker(), ...options });
-
-    return new Announcement({ tracker: this.tracker(), ...remoteResponse.announcements });
+    let data = remoteResponse.data.announcements;
+    if(options) data = options
+    return new Announcement({ tracker: this.tracker(), ...data });
   },
 
   async Nps(options?: Omit<NpsConfig, 'tracker'>) {
     await this.ensureReady();
-    return new Nps({ tracker: this.tracker(), ...remoteResponse.nps });
+    let data = remoteResponse.data.nps;
+    if(options) data = options
+    return new Nps({ tracker: this.tracker(), ...data });
   },
 };
