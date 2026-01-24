@@ -169,7 +169,7 @@ export class Nps {
 
     try {
       const config = getConfig();
-      const baseUrl = config.endpoint || 'http://localhost:3000';
+      const baseUrl = config.endpoint || 'https://api.rojastudio';
       const endpoint = `${baseUrl.replace(/\/$/, '')}/nps`;
 
       const payload = {
