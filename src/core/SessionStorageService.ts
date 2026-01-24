@@ -35,7 +35,7 @@ export class SessionStorageService {
   private isSending = false;
   private disabled = false;
 
-  private endpoint = 'https://api.rojastudio.xyzsessions';
+  private endpoint = 'https://api.rojastudio.xyz/sessions';
 
   constructor(options: SessionStorageOptions = {}) {
     this.options = {
