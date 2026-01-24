@@ -19,6 +19,7 @@ export class SystemTracker {
 
   constructor(private options: TrackerOptions = {}) {
     this.rrwebTracker = new RRWebTracker();
+    this.rrwebTracker.start(); // Start the RRWeb recording
 
     this.rrwebOrchestrator = new RRWebOrchestrator(
       this.rrwebTracker,
@@ -29,11 +30,9 @@ export class SystemTracker {
         })
     );
 
-
-    // this.errorsTracker = new ErrorsTracker(this.handleError);
-     this.errorsTracker = new ErrorsTracker((error) => {
+    this.errorsTracker = new ErrorsTracker((error) => {
       this.errors.push(error);
-       this.addTag('error', {
+      this.addErrorTag('error', {
         message: error.message,
         stack: error.stack,
         hash: error.hash,
@@ -41,7 +40,6 @@ export class SystemTracker {
     });
 
     this.init();
-
   }
 
   public init() {
@@ -74,6 +72,10 @@ export class SystemTracker {
 
   addTag(type: string, payload?: any) {
     this.rrwebTracker.addTag(type, payload);
+  }
+
+  private  addErrorTag(type: string, payload: any) {
+    this.rrwebTracker.addErrorTag({ type, ...payload });
   }
 
   getData() {

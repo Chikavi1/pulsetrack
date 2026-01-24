@@ -31,7 +31,7 @@ class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = 'https://api.rojastudio.xyz';
+const API_BASE_URL = 'http://localhost:3000';
 
 /**
  * Fetches configuration from the init endpoint

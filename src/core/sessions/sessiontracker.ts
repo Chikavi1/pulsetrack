@@ -55,7 +55,7 @@ export class RRWebTracker {
   }
 
   addErrorTag(error: TrackedError) {
-    this.addTag('error', {
+    record.addCustomEvent('error', {
       message: error.message,
       stack: error.stack,
       hash: error.hash,

@@ -25,13 +25,11 @@ export const PulseTrack = {
 
     initializationPromise = (async () => {
       try {
-        // Fetch remote config if enabled
         if (config.remote) {
           const response = await fetchInitConfig<{ data: any }>(config.businessId);
           
           if (response.ok) {
             remoteResponse = response.data;
-            // Merge remote config with local config
             config = { ...config, ...response.data };
           } else {
             console.warn('Failed to fetch remote config:', response.error?.message);

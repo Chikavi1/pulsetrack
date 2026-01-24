@@ -169,7 +169,7 @@ export class Nps {
 
     try {
       const config = getConfig();
-      const baseUrl = config.endpoint || 'https://api.rojastudio.xyz';
+      const baseUrl = config.endpoint || 'http://localhost:3000';
       const endpoint = `${baseUrl.replace(/\/$/, '')}/nps`;
 
       const payload = {
@@ -181,16 +181,26 @@ export class Nps {
         url: window.location.href,
         user_agent: navigator.userAgent,
         timestamp: new Date().toISOString(),
-        business_id: (this.tracker as any).options?.businessId,
       };
 
-      // Try using sendBeacon first if available
-      if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-        if (navigator.sendBeacon(endpoint, blob)) {
+      // Try using fetch with keepalive first for better header support
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJidXNpbmVzc19pZCI6IjA4MGZiYWM0LTJhYTgtNDAxNi04OWVlLWUzMzliZDNjMWMxNiIsInVzZXJfaWQiOiIwMjk0MDRhMi00MGQ4LTQyMzYtOTM3My00MjVjOWI2OTM4YzUiLCJpYXQiOjE3NjkxMDQ5NzR9._Wpt9AIEZM0VxmQ8TlRXc_zjvAJmJF6Bb-8rPkwyCPs',
+          },
+          body: JSON.stringify(payload),
+          keepalive: true
+        });
+        
+        if (response.ok) {
           this.showSuccessMessage();
           return;
         }
+      } catch (error) {
+        console.error('Failed to send NPS with keepalive fetch:', error);
       }
 
       // Fallback to fetch API
@@ -198,11 +208,13 @@ export class Nps {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-business-id': (this.tracker as any).options?.businessId,
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJidXNpbmVzc19pZCI6IjA4MGZiYWM0LTJhYTgtNDAxNi04OWVlLWUzMzliZDNjMWMxNiIsInVzZXJfaWQiOiIwMjk0MDRhMi00MGQ4LTQyMzYtOTM3My00MjVjOWI2OTM4YzUiLCJpYXQiOjE3NjkxMDQ5NzR9._Wpt9AIEZM0VxmQ8TlRXc_zjvAJmJF6Bb-8rPkwyCPs',
         },
         body: JSON.stringify(payload),
         credentials: 'include',
       });
+
+      console.log('se envia')
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

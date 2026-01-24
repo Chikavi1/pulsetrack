@@ -129,7 +129,6 @@ class FeedbackWidget {
     fd.append('type', this.feedbackType);
     fd.append('description', textarea.value);
     fd.append('url', location.href);
-    fd.append('businessId', businessId);
     fd.append('fingerprint', await this.getFingerprint());
     fd.append('userId', this.getUser());
 
@@ -137,8 +136,11 @@ class FeedbackWidget {
       fd.append('screenshot', this.base64ToBlob(this.currentScreenshot));
     }
 
-    await fetch('https://api.rojastudio.xyz/feedback', {
+    await fetch('https://api.rojastudio.xyzfeedback', {
       method: 'POST',
+      headers: {
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJidXNpbmVzc19pZCI6IjA4MGZiYWM0LTJhYTgtNDAxNi04OWVlLWUzMzliZDNjMWMxNiIsInVzZXJfaWQiOiIwMjk0MDRhMi00MGQ4LTQyMzYtOTM3My00MjVjOWI2OTM4YzUiLCJpYXQiOjE3NjkxMDQ5NzR9._Wpt9AIEZM0VxmQ8TlRXc_zjvAJmJF6Bb-8rPkwyCPs'
+      },
       body: fd,
     });
 

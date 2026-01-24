@@ -224,6 +224,42 @@
     </div>
   </div>
 
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-3 text-gray-800">Eventos Personalizados</h2>
+    <div class="flex flex-wrap gap-3">
+      <button id="btn-error" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors">
+        <i class="mr-2"></i>Error
+      </button>
+      <button id="btn-purchase" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors">
+        <i class="mr-2"> </i>Compra realizada
+      </button>
+      <button id="btn-add-to-cart" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-colors">
+        <i class="mr-2"></i>Agrego al carrito
+      </button>
+
+       <button id="btn-product-search" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-colors">
+        <i class="mr-2"></i>Buscar
+      </button>
+
+      <button id="btn-product-viewed" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-colors">
+        <i class="mr-2"></i>product_viewed
+      </button>
+
+      <button id="btn-payment-failed" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-colors">
+        <i class="mr-2"></i>payment_failed
+      </button>
+
+      <button id="btn-payment-success" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-colors">
+        <i class="mr-2"></i>payment_success
+      </button>
+
+      <button id="btn-get-data" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors">
+        <i class="mr-2"></i>Get Data
+      </button>
+    </div>
+  </div>
+
+
   <!-- Image Gallery -->
   <div class="mb-6">
     <h2 class="text-xl font-semibold mb-3">Image Gallery</h2>
@@ -347,19 +383,71 @@
     <!-- <script type="module" src="./tracking.js"></script>  -->
 
     <script src="../dist/pulsetrack.umd.min.js"></script>
+
+    <script>
+      
+    </script>
+
      <script type="module">
       window.addEventListener('load', () => {
         const pt = window.PulseTrack?.PulseTrack;
         if (!pt) return;
 
-        pt.init({
+         pt.init({
           businessId: '080fbac4-2aa8-4016-89ee-e339bd3c1c16',
           remote: true
         });
          pt.Feedback()
          pt.Announcement()
-         pt.Nps()
+         pt.Nps(); 
+
+          const btncart = document.getElementById('btn-add-to-cart');
+          btncart.addEventListener('click', () => {
+            console.log('cart')
+            pt.tracker().addTag('cart', { productId: 'prod-001', amount: 999.99 });
+            
+          });
+
+          
+
+          const btnsearch = document.getElementById('btn-product-search');
+          btnsearch.addEventListener('click', () => {
+            console.log('search')
+             pt.tracker().addTag('search', { query: 'laptop' });
+            
+          });
+
+          const btnproductviewed = document.getElementById('btn-product-viewed');
+          btnproductviewed.addEventListener('click', () => {
+            console.log('product viewed')
+             pt.tracker().addTag('product_viewed', { productId: 'prod-001' });
+            
+          });
+
+          const btnpaymentfailed = document.getElementById('btn-payment-failed');
+          btnpaymentfailed.addEventListener('click', () => {
+            console.log('payment failed')
+             pt.tracker().addTag('payment_failed', { userId: 'user-001' });
+            
+          });
+
+           const btnpaymentsuccess = document.getElementById('btn-payment-success');
+          btnpaymentsuccess.addEventListener('click', () => {
+            console.log('payment success')
+             pt.tracker().addTag('payment_success', { userId: 'user-001' });
+            
+          });
+
+
+
+          const btngetData = document.getElementById('btn-get-data');
+          btngetData.addEventListener('click', () => {
+            console.log( pt.tracker().getData());
+          });
       });
+
+      
+
     </script>
 
    <!-- <script  type="module">

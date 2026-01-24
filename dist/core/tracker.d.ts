@@ -17,6 +17,7 @@ export declare class SystemTracker {
     stop(): void;
     private handleError;
     addTag(type: string, payload?: any): void;
+    private addErrorTag;
     getData(): {
         errors: TrackedError[];
         rrweb: import("@rrweb/types").eventWithTime[];
