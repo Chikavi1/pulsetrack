@@ -14,10 +14,7 @@ type ErrorResponse = {
 
 type ApiResponse<T = unknown> = SuccessResponse<T> | ErrorResponse;
 
-const DEFAULT_HEADERS = {
-  'Content-Type': 'application/json',
-  Accept: 'application/json',
-} as const;
+
 
 class ApiError extends Error {
   constructor(
@@ -31,15 +28,18 @@ class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = 'https://api.rojastudio';
+const API_BASE_URL = 'http://localhost:3000';
 
-/**
- * Fetches configuration from the init endpoint
- * @param businessId The business ID to fetch configuration for
- */
-export async function fetchInitConfig<T = unknown>(businessId: string): Promise<ApiResponse<T>> {
+
+export async function fetchInitConfig<T = unknown>(token: string): Promise<ApiResponse<T>> {
   try {
-    const response = await fetch(`${API_BASE_URL}/init?businessId=${encodeURIComponent(businessId)}`, {
+    const DEFAULT_HEADERS = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'Authorization': `Bearer ${token}`
+    } as const;
+    
+    const response = await fetch(`${API_BASE_URL}/init`, {
       method: 'GET',
       headers: { ...DEFAULT_HEADERS },
       credentials: 'include',

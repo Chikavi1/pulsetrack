@@ -3,7 +3,7 @@ import { Session, PageSession, Event as PtEvent, EventData, RecordedEvent } from
 export interface SessionStorageOptions {
   storageKey?: string;
   inactivityMs?: number;
-  businessId?: string;
+  token?: string;
   credentials?: RequestCredentials;
   useBeacon?: boolean;
 }
@@ -35,13 +35,13 @@ export class SessionStorageService {
   private isSending = false;
   private disabled = false;
 
-  private endpoint = 'https://api.rojastudio.xyz/sessions';
+  private endpoint = 'http://localhost:3000/sessions';
 
   constructor(options: SessionStorageOptions = {}) {
     this.options = {
       storageKey: options.storageKey ?? 'pt:session:v1',
       inactivityMs: options.inactivityMs ?? 30000,
-      businessId: options.businessId ?? undefined,
+      token: options.token ?? undefined,
       credentials: options.credentials ?? 'include',
       useBeacon: options.useBeacon ?? true,
     } as Required<SessionStorageOptions>;
@@ -281,7 +281,7 @@ export class SessionStorageService {
 
     this.isSending = true;
     try {
-      const payload = { businessId: this.options.businessId, ...this.session, _reason: reason };
+      const payload = { token: this.options.token, ...this.session, _reason: reason };
       const success = await this.sendPayload(payload);
 
       if (success) {

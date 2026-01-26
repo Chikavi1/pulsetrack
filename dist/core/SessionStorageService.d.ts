@@ -2,7 +2,7 @@ import { Session, EventData } from './interfaces';
 export interface SessionStorageOptions {
     storageKey?: string;
     inactivityMs?: number;
-    businessId?: string;
+    token?: string;
     credentials?: RequestCredentials;
     useBeacon?: boolean;
 }

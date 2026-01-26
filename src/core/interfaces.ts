@@ -109,7 +109,7 @@ export interface RecordedEvent {
 }
 
 export interface SystemTrackerOptions {
-  businessId: string;
+  token: string;
   userId?: string;
 }
 

@@ -1,6 +1,6 @@
 import { TrackedError } from './interfaces';
 export interface TrackerOptions {
-    businessId?: string;
+    token?: string;
 }
 export declare class SystemTracker {
     private options;

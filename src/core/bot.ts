@@ -2,7 +2,7 @@ export class botTracker {
 
     private botDetector!: BotDetector;
     private botInfo: BotDetectionResult | null = null;
-    private endpoint = 'https://api.rojastudio.xyz/sessions';
+    private endpoint = 'http://localhost:3000/sessions';
     events: any;
     options: any;
     
@@ -40,7 +40,7 @@ export class botTracker {
 
         const payload = JSON.stringify({
             user_id: this.options.userId,
-            business_id: this.options.businessId,
+            // token: this.options.token,
             isBot,
             timestamp: Date.now(),
         });

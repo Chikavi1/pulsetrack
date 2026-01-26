@@ -5,7 +5,7 @@ export interface RRWebChunk {
   sessionId: string;
   events: RRWebEvent[];
   sentAt: number;
-  businessId?: string;
+  token?: string;
   reason?: 'interval' | 'max-events' | 'visibility' | 'pagehide' | 'unload' | 'expired';
 }
 

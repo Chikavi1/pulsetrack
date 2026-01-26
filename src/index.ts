@@ -17,7 +17,7 @@ const ensureInitialized = () => {
 };
 
 export const PulseTrack = {
-  async init(config: { businessId: string; remote?: boolean; [key: string]: any }) {
+  async init(config: { token: string; remote?: boolean; [key: string]: any }) {
     if (initializationPromise) {
       console.warn('PulseTrack already initializing');
       return initializationPromise;
@@ -26,7 +26,7 @@ export const PulseTrack = {
     initializationPromise = (async () => {
       try {
         if (config.remote) {
-          const response = await fetchInitConfig<{ data: any }>(config.businessId);
+          const response = await fetchInitConfig<{ data: any }>(config.token);
           
           if (response.ok) {
             remoteResponse = response.data;

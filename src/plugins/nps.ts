@@ -169,7 +169,7 @@ export class Nps {
 
     try {
       const config = getConfig();
-      const baseUrl = config.endpoint || 'https://api.rojastudio';
+      const baseUrl = config.endpoint || 'http://localhost:3000';
       const endpoint = `${baseUrl.replace(/\/$/, '')}/nps`;
 
       const payload = {
@@ -183,13 +183,12 @@ export class Nps {
         timestamp: new Date().toISOString(),
       };
 
-      // Try using fetch with keepalive first for better header support
-      try {
+       try {
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJidXNpbmVzc19pZCI6IjA4MGZiYWM0LTJhYTgtNDAxNi04OWVlLWUzMzliZDNjMWMxNiIsInVzZXJfaWQiOiIwMjk0MDRhMi00MGQ4LTQyMzYtOTM3My00MjVjOWI2OTM4YzUiLCJpYXQiOjE3NjkxMDQ5NzR9._Wpt9AIEZM0VxmQ8TlRXc_zjvAJmJF6Bb-8rPkwyCPs',
+            'Authorization': 'Bearer ' + config.token,
           },
           body: JSON.stringify(payload),
           keepalive: true
@@ -203,12 +202,11 @@ export class Nps {
         console.error('Failed to send NPS with keepalive fetch:', error);
       }
 
-      // Fallback to fetch API
-      const response = await fetch(endpoint, {
+       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJidXNpbmVzc19pZCI6IjA4MGZiYWM0LTJhYTgtNDAxNi04OWVlLWUzMzliZDNjMWMxNiIsInVzZXJfaWQiOiIwMjk0MDRhMi00MGQ4LTQyMzYtOTM3My00MjVjOWI2OTM4YzUiLCJpYXQiOjE3NjkxMDQ5NzR9._Wpt9AIEZM0VxmQ8TlRXc_zjvAJmJF6Bb-8rPkwyCPs',
+          'Authorization': 'Bearer ' + config.token,
         },
         body: JSON.stringify(payload),
         credentials: 'include',

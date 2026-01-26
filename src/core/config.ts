@@ -1,5 +1,5 @@
 export interface PulseConfig {
-  businessId: string;
+  token: string;
   endpoint?: string;
   remote?: boolean;
   environment?: 'dev' | 'prod';
@@ -15,7 +15,7 @@ export function initConfig(userConfig: PulseConfig) {
   }
 
   config = {
-    endpoint: 'https://api.rojastudio',
+    endpoint: 'http://localhost:3000',
     environment: 'prod',
     ...userConfig,
   };

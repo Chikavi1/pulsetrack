@@ -123,7 +123,7 @@ class FeedbackWidget {
     const textarea = document.getElementById('pt-text') as HTMLTextAreaElement;
     if (!textarea.value.trim()) return alert('Describe el feedback');
 
-    const { businessId } = getConfig();
+    const { token } = getConfig();
     const fd = new FormData();
 
     fd.append('type', this.feedbackType);
@@ -136,10 +136,10 @@ class FeedbackWidget {
       fd.append('screenshot', this.base64ToBlob(this.currentScreenshot));
     }
 
-    await fetch('https://api.rojastudio.xyz/feedback', {
+    await fetch('http://localhost:3000/feedback', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJidXNpbmVzc19pZCI6IjA4MGZiYWM0LTJhYTgtNDAxNi04OWVlLWUzMzliZDNjMWMxNiIsInVzZXJfaWQiOiIwMjk0MDRhMi00MGQ4LTQyMzYtOTM3My00MjVjOWI2OTM4YzUiLCJpYXQiOjE3NjkxMDQ5NzR9._Wpt9AIEZM0VxmQ8TlRXc_zjvAJmJF6Bb-8rPkwyCPs'
+        'Authorization': 'Bearer ' + token
       },
       body: fd,
     });

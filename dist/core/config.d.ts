@@ -1,5 +1,5 @@
 export interface PulseConfig {
-    businessId: string;
+    token: string;
     endpoint?: string;
     remote?: boolean;
     environment?: 'dev' | 'prod';

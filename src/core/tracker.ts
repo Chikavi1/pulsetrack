@@ -7,7 +7,7 @@ import { ErrorsTracker } from './errors';
 import { TrackedError } from './interfaces';
 
 export interface TrackerOptions {
-  businessId?: string;
+  token?: string;
 }
 
 export class SystemTracker {
@@ -26,7 +26,7 @@ export class SystemTracker {
       (chunk) =>
         sendToBackend({
           ...chunk,
-          businessId: this.options.businessId,
+          token: this.options.token,
         })
     );
 

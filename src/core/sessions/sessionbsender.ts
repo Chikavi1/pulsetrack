@@ -14,15 +14,15 @@ export async function sendToBackend(chunk: RRWebChunk): Promise<boolean> {
       clientInfo: isFirstChunk ? await collectClientInfo() : undefined,
     };
 
-    const res = await fetch('https://api.rojastudio.xyz/sessions/ingest', {
+    const res = await fetch('http://localhost:3000/sessions/ingest', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJidXNpbmVzc19pZCI6IjA4MGZiYWM0LTJhYTgtNDAxNi04OWVlLWUzMzliZDNjMWMxNiIsInVzZXJfaWQiOiIwMjk0MDRhMi00MGQ4LTQyMzYtOTM3My00MjVjOWI2OTM4YzUiLCJpYXQiOjE3NjkxMDQ5NzR9._Wpt9AIEZM0VxmQ8TlRXc_zjvAJmJF6Bb-8rPkwyCPs'
+        'Authorization': 'Bearer ' + payload.token,
       },
       body: JSON.stringify(payload),
-      keepalive: isExit, // 🔑 solo salida real
+      keepalive: isExit, 
     });
 
     return res.ok;

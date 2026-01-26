@@ -90,7 +90,7 @@ export interface RecordedEvent {
     page: string;
 }
 export interface SystemTrackerOptions {
-    businessId: string;
+    token: string;
     userId?: string;
 }
 export interface TrackedError {

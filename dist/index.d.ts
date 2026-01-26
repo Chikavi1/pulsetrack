@@ -5,7 +5,7 @@ import { AnnouncementConfig } from './plugins/announcements';
 import { Nps, NpsConfig } from './plugins/nps';
 export declare const PulseTrack: {
     init(config: {
-        businessId: string;
+        token: string;
         remote?: boolean;
         [key: string]: any;
     }): Promise<void>;
