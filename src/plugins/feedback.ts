@@ -136,7 +136,7 @@ class FeedbackWidget {
       fd.append('screenshot', this.base64ToBlob(this.currentScreenshot));
     }
 
-    await fetch('http://localhost:3000/feedback', {
+    await fetch('https://api.rojastudio.xyz/feedback', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + token
