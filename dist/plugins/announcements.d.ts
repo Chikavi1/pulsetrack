@@ -3,7 +3,6 @@ export type AnnouncementType = 'info' | 'success' | 'warning' | 'error';
 export interface AnnouncementConfig {
     tracker: SystemTracker;
     message?: string;
-    title?: string;
     linkUrl?: string;
     linkText?: string;
     type?: AnnouncementType;
@@ -24,11 +23,17 @@ export declare class Announcement {
     originalBodyPaddingTop: string;
     constructor(config: AnnouncementConfig);
     private init;
+    /**
+     * Normaliza valores (local + remote)
+     * No re-lee this.config como fuente
+     */
     private applyRemoteConfig;
     private createAnnouncement;
+    private updateAnnouncement;
+    private getTemplate;
     show(): void;
-    hide(): void;
     private pushBodyDown;
+    hide(): void;
     private restoreBody;
     private addStyles;
     private getTypeColor;

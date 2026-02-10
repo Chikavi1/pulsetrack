@@ -2,6 +2,8 @@ import { SystemTracker } from '../core/tracker';
 export interface NpsConfig {
     tracker: SystemTracker;
     question?: string;
+    minLabel?: string;
+    maxLabel?: string;
     themeColor?: string;
     position?: 'bottom-right' | 'bottom-left' | 'bottom-center' | 'top-right' | 'top-left';
     autoShow?: boolean;
@@ -19,6 +21,8 @@ export declare class Nps {
     private init;
     private applyRemoteConfig;
     private renderWidget;
+    hideForScreenshot(): void;
+    showAfterScreenshot(): void;
     private getStep1Template;
     private attachStep1Listeners;
     private renderStep2;

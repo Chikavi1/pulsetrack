@@ -71,7 +71,8 @@ export const PulseTrack = {
 
   async Announcement(options?: Omit<AnnouncementConfig, 'tracker'>) {
     await this.ensureReady();
-    let data = remoteResponse.data.announcements;
+    let data = remoteResponse.data.announcements.data[0];
+    console.log('data an', data);
     if(options) data = options
     return new Announcement({ tracker: this.tracker(), ...data });
   },

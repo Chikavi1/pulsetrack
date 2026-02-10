@@ -86,16 +86,40 @@ class FeedbackWidget {
     };
   }
 
-  async captureScreenshot() {
-    this.feedbackWindow.style.visibility = 'hidden';
-    const canvas = await html2canvas(document.body, { scale: 1 });
-    this.feedbackWindow.style.visibility = 'visible';
+ 
 
-    this.currentScreenshot = canvas.toDataURL('image/png');
-    (document.getElementById('pt-shot-img') as HTMLImageElement).src =
-      this.currentScreenshot;
-    (document.getElementById('pt-shot') as HTMLElement).style.display = 'block';
-  }
+  async captureScreenshot() {
+  // Ocultamos widget
+  this.feedbackWindow.style.display = 'none';
+  this.container.style.display = 'none';
+
+  const scrollX = window.scrollX;
+  const scrollY = window.scrollY;
+
+  const canvas = await html2canvas(document.body, {
+    useCORS: true,
+    scale: window.devicePixelRatio || 1,
+    x: scrollX,
+    y: scrollY,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    windowWidth: document.documentElement.clientWidth,
+    windowHeight: document.documentElement.clientHeight,
+  });
+
+  // Restauramos widget
+  this.feedbackWindow.style.display = '';
+  this.container.style.display = '';
+
+  this.currentScreenshot = canvas.toDataURL('image/png');
+  (window as any).__ptNps?.hideForScreenshot();
+  (document.getElementById('pt-shot-img') as HTMLImageElement).src =
+    this.currentScreenshot;
+
+  (document.getElementById('pt-shot') as HTMLElement).style.display = 'block';
+  (window as any).__ptNps?.showAfterScreenshot();
+}
+
 
   removeScreenshot() {
     this.currentScreenshot = '';
@@ -163,6 +187,7 @@ class FeedbackWidget {
   createButton() {
     const btn = document.createElement('button');
     btn.className = 'pt-btn';
+    btn.setAttribute('data-html2canvas-ignore', 'true');
     btn.style.cssText = this.getPositionStyle();
     btn.textContent = this.config.buttonText;
     btn.onclick = () => this.toggleFeedbackWindow();
@@ -173,6 +198,7 @@ class FeedbackWidget {
   createFeedbackWindow() {
     const el = document.createElement('div');
     el.className = 'pt-window';
+    el.setAttribute('data-html2canvas-ignore', 'true');
     el.style.cssText = this.getPositionStyle();
 
     el.innerHTML = `
@@ -198,9 +224,7 @@ class FeedbackWidget {
             placeholder="Cuéntanos con detalle..."
           ></textarea>
 
-          <button id="pt-shot-btn" class="pt-secondary">
-            Capturar pantalla
-          </button>
+           
 
           <div id="pt-shot">
             <img id="pt-shot-img"/>

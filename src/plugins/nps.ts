@@ -5,6 +5,8 @@ import { SessionStorageService } from '../core/SessionStorageService';
 export interface NpsConfig {
   tracker: SystemTracker;
   question?: string;
+  minLabel?: string;
+  maxLabel?: string;
   themeColor?: string;
   position?: 'bottom-right' | 'bottom-left' | 'bottom-center' | 'top-right' | 'top-left';
   autoShow?: boolean;
@@ -26,6 +28,8 @@ export class Nps {
 
     this.config = {
       question: '¿Qué tan probable es que recomiendes este servicio?',
+      minLabel: 'Poco probable',
+      maxLabel: 'Muy probable',
       themeColor: '#2563eb',
       position: 'bottom-center',
       autoShow: false,
@@ -68,6 +72,7 @@ export class Nps {
 
     this.container = document.createElement('div');
     this.container.id = 'pt-nps-widget';
+    this.container.setAttribute('data-html2canvas-ignore', 'true');
     this.container.innerHTML = this.getStep1Template();
 
     this.applyStyles();
@@ -76,6 +81,18 @@ export class Nps {
     this.attachStep1Listeners();
   }
 
+  public hideForScreenshot() {
+    if (this.container) {
+      this.container.style.display = 'none';
+    }
+  }
+  
+  public showAfterScreenshot() {
+    if (this.container) {
+      this.container.style.display = '';
+    }
+  }
+  
   /* ---------------- STEP 1 ---------------- */
 
   private getStep1Template(): string {
@@ -88,7 +105,7 @@ export class Nps {
             `<button class="nps-btn" data-score="${i + 1}">${i + 1}</button>`
           ).join('')}
         </div>
-        <p class="nps-footer">1 = Nada probable, 10 = Muy probable</p>
+        <p class="nps-footer">1 = ${this.config.minLabel}, 10 = ${this.config.maxLabel}</p>
         <p class="nps-footer powered">
           Powered by <a href="https://rojastudio.xyz" target="_blank">PulseTrack</a>
         </p>

@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/pulsetrack.svg?style=flat-square)](https://www.npmjs.com/package/pulsetrack)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg?style=flat-square)](https://www.typescriptlang.org/)
 
-PulseTrack is a lightweight analytics and feedback collection library designed for modern web applications. It provides developers with powerful tools to understand user behavior, collect feedback, and make data-driven decisions.
+PulseTrack is an analytics and feedback collection library designed for modern web applications. It provides developers with powerful tools to understand user behavior, collect feedback, and make data-driven decisions.
 
 ## ✨ Features
 
@@ -44,11 +44,11 @@ import { PulseTrack } from 'pulsetrack';
 
 // Initialize with your configuration
 const tracker = new PulseTrack({
-  businessId: 'your-business-id'
+  token: 'your-token-id'
 });
 
 // Track a custom event
-tracker.track('user_action', { action: 'button_click', buttonId: 'cta-button' });
+tracker.addTag('user_action', { action: 'button_click', buttonId: 'cta-button' });
 ```
 
 ## 📚 Documentation
@@ -66,5 +66,5 @@ For detailed documentation, please visit our [documentation website](https://doc
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `businessId` | string | - | Your business identifier (required) |
+| `token` | string | - | Your token identifier (required) |
  
